@@ -1,57 +1,63 @@
 {
   "meta": {
-    "version": 1,
+    "version": 2,
     "description": "技能矩阵 — 个人能力图谱"
   },
   "summary": {
     "level": 42,
-    "title": "持续升级中",
+    "title": "FDE · 全链路交付",
     "tagline": "技能不是标签，是解决问题的肌肉记忆"
   },
   "categories": [
     {
-      "id": "frontend",
-      "name": "前端工程",
-      "icon": "🎨",
-      "color": "var(--color-secondary)",
-      "skills": [
-        { "name": "HTML / CSS",        "level": 95, "note": "语义化、现代布局、动效" },
-        { "name": "JavaScript / TS",   "level": 90, "note": "ES Modules、类型系统" },
-        { "name": "React / Vue",       "level": 85, "note": "组件化、状态管理" },
-        { "name": "工程化 / 构建",     "level": 80, "note": "Vite、Webpack、CI" }
-      ]
-    },
-    {
-      "id": "backend",
-      "name": "后端与服务",
-      "icon": "⚙️",
+      "id": "ai",
+      "name": "AI 应用",
+      "icon": "🤖",
       "color": "var(--color-accent-green)",
       "skills": [
-        { "name": "Node.js",          "level": 82, "note": "Express、服务端架构" },
-        { "name": "数据库设计",       "level": 75, "note": "SQL、NoSQL、索引优化" },
-        { "name": "API 设计",         "level": 85, "note": "REST、GraphQL" }
+        { "name": "LLM 应用开发",      "level": 92, "note": "Prompt Engineering、Claude API" },
+        { "name": "Multi-Agent 系统",  "level": 90, "note": "多智能体编排、闭环自动化" },
+        { "name": "RAG 检索增强",      "level": 85, "note": "Category-Tree 分层检索" },
+        { "name": "MCP 协议",          "level": 78, "note": "Model Context Protocol" }
       ]
     },
     {
-      "id": "tools",
-      "name": "工具与效率",
-      "icon": "🛠",
+      "id": "framework",
+      "name": "AI 框架",
+      "icon": "⚡",
+      "color": "var(--color-secondary)",
+      "skills": [
+        { "name": "OpenClaw",    "level": 88, "note": "自托管 Skill 编排框架" },
+        { "name": "LangChain",   "level": 82, "note": "Chain、Agent、Memory" },
+        { "name": "Dify",        "level": 80, "note": "低代码 LLM 应用编排" },
+        { "name": "Coze",        "level": 75, "note": "字节系 Bot 开发平台" }
+      ]
+    },
+    {
+      "id": "engineering",
+      "name": "工程与部署",
+      "icon": "⚙️",
       "color": "var(--color-accent-purple)",
       "skills": [
-        { "name": "Git / 版本控制",   "level": 90, "note": "分支策略、协作流" },
-        { "name": "DevOps / 部署",    "level": 70, "note": "Docker、CI/CD" },
-        { "name": "设计 / 原型",      "level": 65, "note": "Figma、交互设计" }
+        { "name": "Python",             "level": 95, "note": "精通，主力交付语言" },
+        { "name": "JavaScript",         "level": 80, "note": "前端 + 自动化脚本" },
+        { "name": "SQL",                "level": 82, "note": "数据查询与向量库" },
+        { "name": "私有化部署",         "level": 85, "note": "云端 + 内网双模式" },
+        { "name": "RPA 自动化",         "level": 88, "note": "数据采集、流程自动化" },
+        { "name": "飞书开放平台",       "level": 85, "note": "API 集成、多维表" }
       ]
     },
     {
-      "id": "soft",
-      "name": "软实力",
+      "id": "business",
+      "name": "业务能力",
       "icon": "💡",
       "color": "var(--color-accent-orange)",
       "skills": [
-        { "name": "产品思维",         "level": 80, "note": "需求拆解、用户视角" },
-        { "name": "团队协作",         "level": 85, "note": "沟通、文档、复盘" },
-        { "name": "学习能力",         "level": 90, "note": "快速上手新技术" }
+        { "name": "需求拆解",     "level": 92, "note": "模糊诉求 → 工程目标" },
+        { "name": "场景建模",     "level": 88, "note": "业务流程结构化" },
+        { "name": "客户现场交付", "level": 90, "note": "全链路现场落地" },
+        { "name": "效能量化",     "level": 85, "note": "ROI 测算、数据驱动" },
+        { "name": "团队组建",     "level": 82, "note": "从 0 到 1 搭团队" }
       ]
     }
   ]
