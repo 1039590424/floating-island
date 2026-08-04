@@ -1,347 +1,392 @@
 // cards.js
-// 感悟卡片模块 — 抽卡机制 + 收藏图鉴
-// 展示层最具游戏化色彩的模块
+// 感悟卡片模块 — 创作型抽卡系统
+// 流程：抽关键词 → 用户写感悟 → AI 评级 → 生成符文卡片 → 入图鉴
+// 机制：每日 3 次抽卡，12 小时冷却回满；评级后不可重写，可销毁
 
 import { el, clear, $ } from '../utils/dom.js';
-import { pickWeighted, sleep } from '../utils/helpers.js';
+import { sleep } from '../utils/helpers.js';
 import * as storage from '../utils/storage.js';
+import { gradeInsight } from './ai-grade.js';
+import { drawRune, getGradeConfig, GRADES } from './rune.js';
 
-const DATA_URL = 'data/cards.json';
-const STORAGE_KEY = 'cards:collected';
-const DRAW_LOG_KEY = 'cards:drawLog';
+const CARDS_URL = 'data/cards.json';
+const KEYWORDS_URL = 'data/keywords.json';
+const DAILY_KEY = 'cards:daily';        // { remaining, nextReset }
+const COLLECTION_KEY = 'cards:collection'; // 已收藏卡片数组
+const HISTORY_KEY = 'cards:history';     // 抽卡历史
 
-let cardData = null;       // 加载后的卡牌库
-let collected = new Set(); // 已收集卡牌 ID
-let drawCount = 0;         // 总抽卡次数
-let isDrawing = false;     // 防连点
+let cardConfig = null;    // cards.json 配置
+let keywordData = null;   // keywords.json 词库
+let collection = [];      // 已收藏卡片
+let isDrawing = false;    // 防连点
 
-/** 加载卡牌数据 */
-async function loadCards() {
-  if (cardData) return cardData;
-  try {
-    const res = await fetch(DATA_URL);
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    cardData = await res.json();
-    return cardData;
-  } catch (err) {
-    console.error('[cards] 数据加载失败', err);
-    throw err;
+/* ============ 数据加载 ============ */
+async function loadData() {
+  if (!cardConfig) {
+    const [c, k] = await Promise.all([
+      fetch(CARDS_URL).then((r) => r.json()),
+      fetch(KEYWORDS_URL).then((r) => r.json()),
+    ]);
+    cardConfig = c;
+    keywordData = k;
   }
 }
 
-/** 按稀有度权重随机抽一张卡 */
-function drawOne() {
-  // 先按稀有度权重选稀有度
-  const rarity = pickWeighted(cardData.rarities);
-  // 再在该稀有度的卡牌中随机选一张
-  const pool = cardData.cards.filter((c) => c.rarity === rarity.id);
-  if (pool.length === 0) {
-    // 兜底：从所有卡里抽
-    return cardData.cards[Math.floor(Math.random() * cardData.cards.length)];
+/* ============ 每日抽卡次数管理 ============ */
+function getDailyStatus() {
+  const now = Date.now();
+  const saved = storage.get(DAILY_KEY, null);
+  if (!saved || now >= saved.nextReset) {
+    // 首次或已过冷却，重置
+    const next = now + cardConfig.dailyConfig.cooldownHours * 3600 * 1000;
+    const fresh = { remaining: cardConfig.dailyConfig.drawsPerDay, nextReset: next };
+    storage.set(DAILY_KEY, fresh);
+    return fresh;
   }
-  return pool[Math.floor(Math.random() * pool.length)];
+  return saved;
 }
 
-/** 获取稀有度配置 */
-function getRarity(id) {
-  return cardData.rarities.find((r) => r.id === id) || cardData.rarities[0];
+function consumeDraw() {
+  const daily = getDailyStatus();
+  daily.remaining = Math.max(0, daily.remaining - 1);
+  storage.set(DAILY_KEY, daily);
+  return daily.remaining;
 }
 
-/** 持久化收藏 */
-function persistCollected() {
-  storage.set(STORAGE_KEY, Array.from(collected));
-}
-function persistDrawLog(cardId) {
-  const log = storage.get(DRAW_LOG_KEY, []);
-  log.unshift({ cardId, time: Date.now() });
-  // 只保留最近 50 条
-  storage.set(DRAW_LOG_KEY, log.slice(0, 50));
-  drawCount = log.length;
+/* ============ 抽关键词 ============ */
+function drawKeyword() {
+  // 从所有主题的所有词中随机抽一个
+  const allWords = [];
+  keywordData.themes.forEach((t) => {
+    t.words.forEach((w) => allWords.push({ ...w, theme: t.name, themeIcon: t.icon }));
+  });
+  return allWords[Math.floor(Math.random() * allWords.length)];
 }
 
-function loadPersisted() {
-  const saved = storage.get(STORAGE_KEY, []);
-  collected = new Set(saved);
-  const log = storage.get(DRAW_LOG_KEY, []);
-  drawCount = log.length;
+/* ============ 收藏管理 ============ */
+function loadCollection() {
+  collection = storage.get(COLLECTION_KEY, []);
 }
 
-/* ============ 渲染 ============ */
+function saveCard(card) {
+  collection.unshift(card);
+  storage.set(COLLECTION_KEY, collection);
+  // 历史
+  const log = storage.get(HISTORY_KEY, []);
+  log.unshift({ cardId: card.id, time: Date.now(), grade: card.grade });
+  storage.set(HISTORY_KEY, log.slice(0, 100));
+}
 
-/** 渲染模块主结构 */
+function destroyCard(cardId) {
+  collection = collection.filter((c) => c.id !== cardId);
+  storage.set(COLLECTION_KEY, collection);
+}
+
+/* ============ 渲染主结构 ============ */
 function renderSkeleton(container) {
   clear(container);
   const root = el('div', { class: 'cards-module' }, [
+    el('header', { class: 'island__title' }, [
+      '感悟卡片',
+      el('span', { class: 'island__title-accent' }, ['INSIGHT CARDS']),
+    ]),
+
     // 抽卡舞台
-    el('div', { class: 'cards-stage' }, [
-      // 卡组堆叠视觉
-      el('div', { class: 'cards-deck', attrs: { 'aria-hidden': 'true' } }, [
-        el('div', { class: 'cards-deck__layer cards-deck__layer--3' }),
-        el('div', { class: 'cards-deck__layer cards-deck__layer--2' }),
-        el('div', { class: 'cards-deck__layer cards-deck__layer--1' }),
-        el('div', { class: 'cards-deck__layer cards-deck__layer--0' }, [
-          el('span', { class: 'cards-deck__icon' }, '?'),
+    el('div', { class: 'cards-stage', id: 'cards-stage' }, [
+      el('div', { class: 'cards-daily-info', id: 'cards-daily-info' }), // 剩余次数/冷却
+      el('div', { class: 'cards-deck-wrap', id: 'cards-deck-wrap' }, [
+        el('div', { class: 'cards-deck', attrs: { 'aria-hidden': 'true' } }, [
+          el('div', { class: 'cards-deck__layer cards-deck__layer--3' }),
+          el('div', { class: 'cards-deck__layer cards-deck__layer--2' }),
+          el('div', { class: 'cards-deck__layer cards-deck__layer--1' }),
+          el('div', { class: 'cards-deck__layer cards-deck__layer--0' }, [
+            el('span', { class: 'cards-deck__icon' }, '?'),
+          ]),
+        ]),
+        el('button', {
+          class: 'cards-draw-btn',
+          id: 'cards-draw-btn',
+          type: 'button',
+          attrs: { 'aria-label': '抽取关键词' },
+        }, [
+          el('span', { class: 'cards-draw-btn__icon' }, '✦'),
+          el('span', { class: 'cards-draw-btn__text' }, '抽取关键词'),
         ]),
       ]),
-      // 抽卡按钮
-      el('button', {
-        class: 'cards-draw-btn',
-        type: 'button',
-        attrs: { 'aria-label': '抽取一张感悟卡片' },
-        on: { click: handleDraw },
-      }, [
-        el('span', { class: 'cards-draw-btn__icon' }, '✦'),
-        el('span', { class: 'cards-draw-btn__text' }, '抽一张'),
-      ]),
-      // 当前抽到的卡（动态出现）
-      el('div', { class: 'cards-current', attrs: { 'aria-live': 'polite' } }),
+      // 当前抽到的关键词 + 写作区（动态出现）
+      el('div', { class: 'cards-current', id: 'cards-current', attrs: { 'aria-live': 'polite' } }),
     ]),
 
     // 统计区
-    el('div', { class: 'cards-stats' }, [
-      el('div', { class: 'cards-stat', dataset: { stat: 'draws' } }, [
-        el('div', { class: 'cards-stat__value' }, '0'),
-        el('div', { class: 'cards-stat__label' }, '累计抽取'),
+    el('div', { class: 'cards-stats', id: 'cards-stats' }, [
+      el('div', { class: 'cards-stat' }, [
+        el('div', { class: 'cards-stat__value', id: 'stat-draws' }, '0'),
+        el('div', { class: 'cards-stat__label' }, '累计抽卡'),
       ]),
-      el('div', { class: 'cards-stat', dataset: { stat: 'collected' } }, [
-        el('div', { class: 'cards-stat__value' }, '0'),
-        el('div', { class: 'cards-stat__label' }, '已收录'),
+      el('div', { class: 'cards-stat' }, [
+        el('div', { class: 'cards-stat__value', id: 'stat-collected' }, '0'),
+        el('div', { class: 'cards-stat__label' }, '已收藏'),
       ]),
-      el('div', { class: 'cards-stat', dataset: { stat: 'total' } }, [
-        el('div', { class: 'cards-stat__value' }, '0'),
-        el('div', { class: 'cards-stat__label' }, '图鉴总数'),
+      el('div', { class: 'cards-stat' }, [
+        el('div', { class: 'cards-stat__value', id: 'stat-best' }, '—'),
+        el('div', { class: 'cards-stat__label' }, '最高等级'),
       ]),
-      el('div', { class: 'cards-stat', dataset: { stat: 'rate' } }, [
-        el('div', { class: 'cards-stat__value' }, '0%'),
-        el('div', { class: 'cards-stat__label' }, '完成度'),
+      el('div', { class: 'cards-stat' }, [
+        el('div', { class: 'cards-stat__value', id: 'stat-sss' }, '0'),
+        el('div', { class: 'cards-stat__label' }, 'SSS 卡数'),
       ]),
     ]),
-
-    // 稀有度图例
-    el('div', { class: 'cards-legend' }),
 
     // 图鉴
     el('div', { class: 'cards-collection' }, [
       el('div', { class: 'cards-collection__header' }, [
-        el('h3', { class: 'cards-collection__title' }, '卡片图鉴'),
+        el('h3', { class: 'cards-collection__title' }, '我的感悟图鉴'),
         el('div', { class: 'cards-collection__actions' }, [
           el('button', {
             class: 'cards-collection__btn',
+            id: 'cards-clear-btn',
             type: 'button',
-            on: { click: handleReset },
           }, '清空收藏'),
         ]),
       ]),
-      el('div', { class: 'cards-collection__grid' }),
+      el('div', { class: 'cards-collection__grid', id: 'cards-grid' }),
     ]),
   ]);
-
-  // 在根节点前置插入岛屿标题
-  root.prepend(
-    el('header', { class: 'island__title' }, [
-      '感悟卡片',
-      el('span', { class: 'island__title-accent' }, ['INSIGHT CARDS']),
-    ])
-  );
   container.append(root);
   return root;
 }
 
-/** 渲染稀有度图例 */
-function renderLegend() {
-  const legend = $('.cards-legend');
-  if (!legend) return;
-  clear(legend);
-  cardData.rarities.forEach((r) => {
-    const count = cardData.cards.filter((c) => c.rarity === r.id).length;
-    const owned = cardData.cards.filter((c) => c.rarity === r.id && collected.has(c.id)).length;
-    legend.append(el('div', {
-      class: ['cards-legend__item', `rarity--${r.id}`],
-      dataset: { rarity: r.id },
-    }, [
-      el('span', { class: 'cards-legend__dot' }),
-      el('span', { class: 'cards-legend__name' }, r.name),
-      el('span', { class: 'cards-legend__count' }, `${owned}/${count}`),
+/* ============ 渲染：每日信息 ============ */
+function renderDailyInfo() {
+  const info = $('#cards-daily-info');
+  if (!info) return;
+  const daily = getDailyStatus();
+  clear(info);
+  if (daily.remaining > 0) {
+    info.append(el('span', { class: 'cards-daily-info__remaining' }, [
+      el('span', { class: 'cards-daily-info__dot' }, '●'),
+      `今日剩余 ${daily.remaining} 次抽卡机会`,
     ]));
-  });
+  } else {
+    const remainMs = daily.nextReset - Date.now();
+    const hours = Math.floor(remainMs / 3600000);
+    const mins = Math.floor((remainMs % 3600000) / 60000);
+    info.append(el('span', { class: 'cards-daily-info__cooldown' }, [
+      el('span', { class: 'cards-daily-info__dot cards-daily-info__dot--cooling' }, '◐'),
+      `冷却中，${hours}时${mins}分后恢复`,
+    ]));
+  }
 }
 
-/** 渲染统计 */
+/* ============ 渲染：统计 ============ */
 function renderStats() {
-  const total = cardData.cards.length;
-  const owned = collected.size;
-  const rate = total > 0 ? Math.round((owned / total) * 100) : 0;
-
-  const setStat = (key, value) => {
-    const node = $(`.cards-stat[data-stat="${key}"] .cards-stat__value`);
-    if (node) node.textContent = value;
-  };
-  setStat('draws', drawCount);
-  setStat('collected', owned);
-  setStat('total', total);
-  setStat('rate', `${rate}%`);
+  const drawLog = storage.get(HISTORY_KEY, []);
+  const setVal = (id, v) => { const n = $(id); if (n) n.textContent = v; };
+  setVal('#stat-draws', drawLog.length);
+  setVal('#stat-collected', collection.length);
+  // 最高等级
+  const gradeOrder = GRADES; // SSS > S > A > ...
+  const best = collection
+    .map((c) => c.grade)
+    .sort((a, b) => GRADES.indexOf(a) - GRADES.indexOf(b))[0];
+  setVal('#stat-best', best || '—');
+  setVal('#stat-sss', collection.filter((c) => c.grade === 'SSS').length);
 }
 
-/** 渲染图鉴网格 */
+/* ============ 渲染：图鉴网格（卡背小卡）============ */
 function renderCollection() {
-  const grid = $('.cards-collection__grid');
+  const grid = $('#cards-grid');
   if (!grid) return;
   clear(grid);
 
-  // 按稀有度倒序排列
-  const rarityOrder = cardData.rarities.map((r) => r.id).reverse();
-  const sorted = [...cardData.cards].sort((a, b) => {
-    const ra = rarityOrder.indexOf(a.rarity);
-    const rb = rarityOrder.indexOf(b.rarity);
-    if (ra !== rb) return ra - rb;
-    return a.id.localeCompare(b.id);
-  });
+  if (collection.length === 0) {
+    grid.append(el('div', { class: 'cards-empty' }, [
+      el('div', { class: 'cards-empty__icon' }, '✦'),
+      el('p', {}, '还没有感悟卡片，抽一张关键词开始你的思考之旅'),
+    ]));
+    return;
+  }
+
+  // 按等级从高到低排列
+  const sorted = [...collection].sort((a, b) =>
+    GRADES.indexOf(a.grade) - GRADES.indexOf(b.grade)
+  );
 
   sorted.forEach((card) => {
-    const isCollected = collected.has(card.id);
-    const rarity = getRarity(card.rarity);
+    const cfg = getGradeConfig(card.grade);
+    // 卡背小卡：金属底 + 等级徽章 + 符文 + 高光
     const item = el('div', {
-      class: ['collection-card', `collection-card--${card.rarity}`, !isCollected && 'is-locked'],
-      dataset: { cardId: card.id, rarity: card.rarity },
-      attrs: {
-        role: 'button',
-        tabindex: '0',
-        'aria-label': isCollected ? `${rarity.name}：${card.title}` : `未解锁的 ${rarity.name} 卡片`,
-      },
+      class: ['col-card', `col-card--${card.grade}`],
+      dataset: { cardId: card.id },
+      attrs: { role: 'button', tabindex: '0', 'aria-label': `${cfg.name}：${card.keyword}` },
       on: {
-        click: () => isCollected && previewCard(card),
+        click: () => previewCard(card),
         keydown: (e) => {
-          if (isCollected && (e.key === 'Enter' || e.key === ' ')) {
-            e.preventDefault();
-            previewCard(card);
-          }
+          if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); previewCard(card); }
         },
       },
     }, [
-      el('div', { class: 'collection-card__rarity', style: { color: rarity.color } },
-        rarity.name
-      ),
-      el('div', { class: 'collection-card__title' },
-        isCollected ? card.title : '？？？'
-      ),
-      el('div', { class: 'collection-card__icon' },
-        isCollected ? '✦' : '?'
-      ),
+      // 金属高光层
+      el('div', { class: 'col-card__shine' }),
+      // 等级徽章
+      el('div', { class: 'col-card__grade', style: { color: cfg.color } }, card.grade),
+      // 符文
+      el('canvas', {
+        class: 'col-card__rune',
+        attrs: { width: '70', height: '70' },
+      }),
+      // 主题标识
+      el('div', { class: 'col-card__theme' }, card.theme),
     ]);
+    const canvas = item.querySelector('canvas');
+    if (canvas) drawRune(canvas, card.grade, card.runeSeed, false);
     grid.append(item);
   });
 }
 
-/** 创建一张完整卡牌 DOM */
-function createCardEl(card) {
-  const rarity = getRarity(card.rarity);
-  return el('div', {
-    class: ['insight-card', `insight-card--${card.rarity}`, `rarity-glow--${card.rarity}`],
-    dataset: { cardId: card.id },
-  }, [
-    el('div', { class: 'insight-card__inner' }, [
-      el('div', { class: 'insight-card__rarity-bar', style: { background: rarity.color } }),
-      el('div', { class: 'insight-card__header' }, [
-        el('span', { class: 'insight-card__rarity', style: { color: rarity.color } }, rarity.name),
-        el('span', { class: 'insight-card__category' }, card.category),
-      ]),
-      el('div', { class: 'insight-card__body' }, [
-        el('h3', { class: 'insight-card__title' }, card.title),
-        el('p', { class: 'insight-card__text' }, card.text),
-      ]),
-      el('div', { class: 'insight-card__footer' }, [
-        el('span', { class: 'insight-card__author' }, `— ${card.author}`),
-        el('span', { class: 'insight-card__id' }, `#${card.id}`),
-      ]),
-    ]),
-  ]);
-}
+/* ============ 预览卡片（弹出模态 + 翻开动画）============ */
+let activeModal = null;
 
-/** 预览某张已收集的卡（无动画，直接展示） */
 function previewCard(card) {
-  const current = $('.cards-current');
-  if (!current) return;
-  clear(current);
-  const wrap = el('div', { class: 'card-flip-container is-flipped is-preview' }, [
-    el('div', { class: 'card-flip-inner' }, [
-      el('div', { class: 'card-face card-face--back' }, [createCardEl(card)]),
-    ]),
-    el('div', { class: 'cards-current__actions' }, [
-      el('button', {
-        class: 'cards-action-btn',
-        type: 'button',
-        on: { click: handleDraw },
-      }, '抽一张新的'),
+  // 关闭已存在的模态
+  if (activeModal) { activeModal.remove(); activeModal = null; }
+
+  const cfg = getGradeConfig(card.grade);
+
+  // 模态容器
+  const modal = el('div', { class: 'card-modal', attrs: { role: 'dialog', 'aria-modal': 'true' } }, [
+    el('div', { class: 'card-modal__backdrop' }),
+    el('div', { class: 'card-modal__content' }, [
+      // 翻牌容器：先显示卡背，点击/自动翻到卡面
+      el('div', { class: 'card-flip-container card-modal__flip', id: 'modal-flip' }, [
+        el('div', { class: 'card-flip-inner' }, [
+          // 卡背（金属符文面 — 神秘面）
+          el('div', { class: 'card-face card-face--front' }, [
+            el('div', { class: ['card-mystic', `card-mystic--${card.grade}`] }, [
+              el('div', { class: 'card-mystic__shine' }),
+              el('div', { class: 'card-mystic__grade', style: { color: cfg.color } }, card.grade),
+              el('canvas', {
+                class: 'card-mystic__rune',
+                attrs: { width: '140', height: '140' },
+              }),
+              el('div', { class: 'card-mystic__hint' }, '点击翻开'),
+            ]),
+          ]),
+          // 卡面（感悟内容）
+          el('div', { class: 'card-face card-face--back' }, [
+            createInsightCardEl(card),
+          ]),
+        ]),
+      ]),
+      // 操作按钮
+      el('div', { class: 'card-modal__actions' }, [
+        el('button', {
+          class: 'cards-action-btn cards-action-btn--destroy',
+          type: 'button',
+          on: {
+            click: () => {
+              if (!confirm(`确定销毁这张「${card.keyword}」卡片？销毁后无法恢复。`)) return;
+              destroyCard(card.id);
+              closeModal();
+              renderStats();
+              renderCollection();
+              toast('已销毁卡片', 'info');
+            },
+          },
+        }, '销毁此卡'),
+        el('button', {
+          class: 'cards-action-btn',
+          type: 'button',
+          on: { click: closeModal },
+        }, '关闭'),
+      ]),
     ]),
   ]);
-  current.append(wrap);
-  // 滚动到舞台
-  const stage = $('.cards-stage');
-  if (stage) stage.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+  document.body.append(modal);
+  activeModal = modal;
+
+  // 绘制卡背符文（动画）
+  const mysticCanvas = modal.querySelector('.card-mystic__rune');
+  if (mysticCanvas) drawRune(mysticCanvas, card.grade, card.runeSeed, true);
+
+  // 点击卡背 → 翻开到卡面
+  const flip = modal.querySelector('#modal-flip');
+  const flipToBack = () => {
+    flip.classList.add('is-flipped');
+    // 翻开后绘制卡面符文
+    const insightCanvas = modal.querySelector('.insight-card__rune');
+    if (insightCanvas) drawRune(insightCanvas, card.grade, card.runeSeed, true);
+    flip.removeEventListener('click', flipToBack);
+  };
+  if (flip) {
+    flip.addEventListener('click', flipToBack);
+    // 1.2 秒后自动翻开
+    setTimeout(() => {
+      if (activeModal === modal && !flip.classList.contains('is-flipped')) {
+        flipToBack();
+      }
+    }, 1200);
+  }
+
+  // 点击背景关闭
+  const backdrop = modal.querySelector('.card-modal__backdrop');
+  if (backdrop) backdrop.addEventListener('click', closeModal);
+
+  // ESC 关闭
+  const escHandler = (e) => {
+    if (e.key === 'Escape') { closeModal(); document.removeEventListener('keydown', escHandler); }
+  };
+  document.addEventListener('keydown', escHandler);
 }
 
-/* ============ 抽卡交互 ============ */
+function closeModal() {
+  if (activeModal) { activeModal.remove(); activeModal = null; }
+}
 
+/* ============ 抽卡主流程 ============ */
 async function handleDraw() {
   if (isDrawing) return;
-  isDrawing = true;
 
-  const btn = $('.cards-draw-btn');
-  if (btn) {
-    btn.disabled = true;
-    btn.classList.add('is-drawing');
+  const daily = getDailyStatus();
+  if (daily.remaining <= 0) {
+    toast('今日抽卡次数已用完，请等待冷却', 'warning');
+    return;
   }
 
+  isDrawing = true;
+  const btn = $('#cards-draw-btn');
+  if (btn) { btn.disabled = true; btn.classList.add('is-drawing'); }
+
   try {
-    await loadCards();
-    const card = drawOne();
+    await loadData();
+    const keyword = drawKeyword();
 
-    // 阶段 1：抽卡动画（卡片飞入）
-    await animateDraw(card);
+    // 消耗一次抽卡机会
+    consumeDraw();
+    renderDailyInfo();
 
-    // 持久化
-    const isNew = !collected.has(card.id);
-    collected.add(card.id);
-    persistCollected();
-    persistDrawLog(card.id);
+    // 阶段 1：抽卡动画 + 揭示关键词
+    await animateDrawKeyword(keyword);
 
-    // 阶段 2：翻牌揭示
-    await sleep(200);
-    await flipReveal(card);
-
-    // 阶段 3：如果是新卡，提示
-    if (isNew) {
-      const rarity = getRarity(card.rarity);
-      // 通过自定义事件让 app.toast 显示
-      document.dispatchEvent(new CustomEvent('cards:new', { detail: { card, rarity } }));
-    }
-
-    // 更新 UI
-    renderStats();
-    renderLegend();
-    renderCollection();
+    // 阶段 2：展示写作面板
+    showWritingPanel(keyword);
   } catch (err) {
     console.error('[cards] 抽卡失败', err);
-    document.dispatchEvent(new CustomEvent('cards:error', { detail: { message: '抽卡失败，请刷新重试' } }));
+    toast('抽卡失败，请刷新重试', 'error');
   } finally {
     isDrawing = false;
-    if (btn) {
-      btn.disabled = false;
-      btn.classList.remove('is-drawing');
-    }
+    if (btn) { btn.disabled = false; btn.classList.remove('is-drawing'); }
   }
 }
 
-/** 阶段 1：卡组震动 → 卡片飞入（卡背朝上） */
-async function animateDraw(card) {
-  const stage = $('.cards-stage');
-  const current = $('.cards-current');
-  if (!stage || !current) return;
-
-  // 清空之前的卡
+/** 阶段 1：卡组震动 → 关键词揭示 */
+async function animateDrawKeyword(keyword) {
+  const current = $('#cards-current');
+  if (!current) return;
   clear(current);
 
-  // 卡组震动效果
+  // 卡组震动
   const deck = $('.cards-deck');
   if (deck) {
     deck.classList.add('is-shaking');
@@ -349,125 +394,306 @@ async function animateDraw(card) {
     deck.classList.remove('is-shaking');
   }
 
-  // 卡背朝上飞入
-  const cardBack = el('div', { class: 'card-flip-container card-back-flyin' }, [
-    el('div', { class: 'card-flip-inner' }, [
-      el('div', { class: 'card-face card-face--front card-back' }, [
-        el('div', { class: 'card-back__pattern' }, [
-          el('span', { class: 'card-back__logo' }, '★'),
-        ]),
+  // 关键词卡飞入
+  const kwCard = el('div', { class: 'keyword-reveal card-back-flyin' }, [
+    el('div', { class: 'keyword-reveal__inner' }, [
+      el('div', { class: 'keyword-reveal__theme' }, [
+        el('span', {}, keyword.themeIcon),
+        el('span', {}, keyword.theme),
       ]),
+      el('div', { class: 'keyword-reveal__word' }, keyword.word),
+      el('div', { class: 'keyword-reveal__hint' }, keyword.hint),
     ]),
   ]);
-  current.append(cardBack);
-
-  await sleep(600); // 等飞入动画完成
+  current.append(kwCard);
+  await sleep(600);
 }
 
-/** 阶段 2：3D 翻转揭示卡面 */
-async function flipReveal(card) {
-  const container = $('.card-back-flyin');
-  if (!container) return;
+/** 阶段 2：展示写作面板 */
+function showWritingPanel(keyword) {
+  const current = $('#cards-current');
+  if (!current) return;
+  clear(current);
 
-  // 替换为完整 flip 容器：正反两面
-  const parent = container.parentElement;
-  const oldEl = container;
+  const cfg = cardConfig.dailyConfig;
+  const panel = el('div', { class: 'writing-panel' }, [
+    el('div', { class: 'writing-panel__keyword' }, [
+      el('span', { class: 'writing-panel__theme' }, `${keyword.themeIcon} ${keyword.theme}`),
+      el('div', { class: 'writing-panel__word' }, keyword.word),
+      el('div', { class: 'writing-panel__hint' }, keyword.hint),
+    ]),
+    el('textarea', {
+      class: 'writing-panel__textarea',
+      id: 'writing-input',
+      attrs: {
+        placeholder: `围绕「${keyword.word}」写下你的感悟（${cfg.minWords}-${cfg.maxWords} 字）…`,
+        'aria-label': '感悟内容',
+        minlength: String(cfg.minWords),
+        maxlength: String(cfg.maxWords),
+        rows: '6',
+      },
+    }),
+    el('div', { class: 'writing-panel__footer' }, [
+      el('span', { class: 'writing-panel__count', id: 'writing-count' }, `0 / ${cfg.maxWords}`),
+      el('div', { class: 'writing-panel__actions' }, [
+        el('button', {
+          class: 'cards-action-btn cards-action-btn--ghost',
+          type: 'button',
+          on: { click: () => { clear(current); renderDailyInfo(); } },
+        }, '放弃'),
+        el('button', {
+          class: 'cards-action-btn cards-action-btn--primary',
+          id: 'writing-submit',
+          type: 'button',
+        }, '提交评级'),
+      ]),
+    ]),
+  ]);
+  current.append(panel);
 
+  // 字数统计
+  const textarea = $('#writing-input');
+  const countEl = $('#writing-count');
+  const submitBtn = $('#writing-submit');
+  if (textarea && countEl) {
+    textarea.addEventListener('input', () => {
+      const len = textarea.value.trim().length;
+      countEl.textContent = `${len} / ${cfg.maxWords}`;
+      countEl.classList.toggle('is-short', len < cfg.minWords);
+      countEl.classList.toggle('is-ok', len >= cfg.minWords);
+    });
+  }
+
+  // 提交评级
+  if (submitBtn) {
+    submitBtn.addEventListener('click', () => handleSubmitInsight(keyword, textarea, submitBtn));
+  }
+
+  // 自动聚焦
+  if (textarea) textarea.focus();
+}
+
+/** 阶段 3：提交感悟 → AI 评级 → 生成卡片 */
+async function handleSubmitInsight(keyword, textarea, submitBtn) {
+  const cfg = cardConfig.dailyConfig;
+  const text = textarea.value.trim();
+
+  if (text.length < cfg.minWords) {
+    toast(`感悟太短了，至少 ${cfg.minWords} 字`, 'warning');
+    textarea.focus();
+    return;
+  }
+  if (text.length > cfg.maxWords) {
+    toast(`感悟超长，最多 ${cfg.maxWords} 字`, 'warning');
+    return;
+  }
+
+  // 提交按钮变 loading
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'AI 评级中…';
+  }
+
+  try {
+    // 调用 AI 评级
+    const result = await gradeInsight(text, keyword.word);
+
+    // 生成卡片对象
+    const cardId = 'c' + Date.now().toString(36);
+    const runeSeed = keyword.word + Date.now() + cardId;
+    const card = {
+      id: cardId,
+      keyword: keyword.word,
+      theme: `${keyword.themeIcon} ${keyword.theme}`,
+      hint: keyword.hint,
+      text,
+      grade: result.grade,
+      comment: result.comment,
+      scores: result.scores,
+      total: result.total,
+      runeSeed,
+      time: Date.now(),
+    };
+
+    // 阶段 4：生成卡片动画（含收藏/销毁按钮，由用户选择是否入库）
+    await animateRevealCard(card);
+
+    if (result.grade === 'SSS' || result.grade === 'S') {
+      toast(`恭喜！获得 ${result.grade} 级感悟卡片`, 'success', 3000);
+    }
+  } catch (err) {
+    console.error('[cards] 评级失败', err);
+    toast('评级失败，请重试', 'error');
+  } finally {
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.textContent = '提交评级';
+    }
+  }
+}
+
+/** 阶段 4：评级结果 + 卡片揭示动画 */
+async function animateRevealCard(card) {
+  const current = $('#cards-current');
+  if (!current) return;
+  clear(current);
+
+  const cfg = getGradeConfig(card.grade);
+
+  // 先展示评级结果
+  const resultEl = el('div', { class: 'grade-result' }, [
+    el('div', { class: `grade-result__badge grade-result__badge--${card.grade}` }, card.grade),
+    el('div', { class: 'grade-result__label' }, cfg.name),
+    el('div', { class: 'grade-result__comment' }, card.comment),
+  ]);
+  current.append(resultEl);
+  await sleep(1500);
+
+  // 翻转揭示卡片
+  clear(current);
   const flipContainer = el('div', { class: 'card-flip-container is-flipping' }, [
     el('div', { class: 'card-flip-inner' }, [
-      // 正面（卡背图案）— 翻转前可见
+      // 正面（卡背图案）
       el('div', { class: 'card-face card-face--front card-back' }, [
         el('div', { class: 'card-back__pattern' }, [
           el('span', { class: 'card-back__logo' }, '★'),
         ]),
       ]),
-      // 反面（卡面内容）— 翻转后可见
+      // 反面（卡面）
       el('div', { class: 'card-face card-face--back' }, [
-        createCardEl(card),
+        createInsightCardEl(card),
       ]),
     ]),
   ]);
-
-  parent.replaceChild(flipContainer, oldEl);
-
-  // 触发翻转
+  current.append(flipContainer);
   await sleep(50);
   flipContainer.classList.add('is-flipped');
   await sleep(700);
   flipContainer.classList.remove('is-flipping');
 
-  // 翻转完成后，保留卡牌并添加交互按钮
-  const cardEl = $('.insight-card', flipContainer);
-  if (cardEl) {
-    const actions = el('div', { class: 'cards-current__actions' }, [
-      el('button', {
-        class: 'cards-action-btn',
-        type: 'button',
-        on: { click: handleDraw },
-      }, '再抽一张'),
-    ]);
-    flipContainer.append(actions);
-  }
+  // 添加操作按钮：收藏 + 销毁 + 再抽一张
+  const actions = el('div', { class: 'cards-current__actions' }, [
+    el('button', {
+      class: 'cards-action-btn cards-action-btn--primary',
+      type: 'button',
+      on: {
+        click: () => {
+          saveCard(card);
+          renderStats();
+          renderCollection();
+          clear(current);
+          renderDailyInfo();
+          toast('已收藏到图鉴', 'success');
+        },
+      },
+    }, '收藏'),
+    el('button', {
+      class: 'cards-action-btn cards-action-btn--destroy',
+      type: 'button',
+      on: {
+        click: () => {
+          if (!confirm(`丢弃这张「${card.keyword}」卡片？丢弃后无法恢复。`)) return;
+          clear(current);
+          renderDailyInfo();
+          toast('已丢弃卡片', 'info');
+        },
+      },
+    }, '丢弃'),
+    el('button', {
+      class: 'cards-action-btn',
+      type: 'button',
+      on: { click: handleDraw },
+    }, '再抽一张'),
+  ]);
+  current.append(actions);
+
+  // 绘制符文（动画）
+  const canvas = flipContainer.querySelector('.insight-card__rune');
+  if (canvas) drawRune(canvas, card.grade, card.runeSeed, true);
 }
 
-/** 清空收藏 */
+/** 创建感悟卡片 DOM */
+function createInsightCardEl(card) {
+  const cfg = getGradeConfig(card.grade);
+  return el('div', {
+    class: ['insight-card', `insight-card--${card.grade}`, `rarity-glow--${card.grade}`],
+  }, [
+    el('div', { class: 'insight-card__inner' }, [
+      el('div', { class: 'insight-card__rarity-bar', style: { background: cfg.color } }),
+      el('div', { class: 'insight-card__header' }, [
+        el('span', { class: 'insight-card__rarity', style: { color: cfg.color } }, cfg.name),
+        el('span', { class: 'insight-card__category' }, card.theme),
+      ]),
+      el('div', { class: 'insight-card__body' }, [
+        el('div', { class: 'insight-card__keyword' }, card.keyword),
+        el('p', { class: 'insight-card__text' }, card.text),
+        card.comment ? el('div', { class: 'insight-card__comment' }, [
+          el('span', { class: 'insight-card__comment-label' }, 'AI 点评'),
+          card.comment,
+        ]) : null,
+      ]),
+      el('div', { class: 'insight-card__footer' }, [
+        el('span', {}, new Date(card.time).toLocaleString('zh-CN')),
+        el('span', { class: 'insight-card__id' }, `#${card.id}`),
+      ]),
+      el('canvas', {
+        class: 'insight-card__rune',
+        attrs: { width: '120', height: '120' },
+      }),
+    ]),
+  ]);
+}
+
+/* ============ 清空收藏 ============ */
 function handleReset() {
-  if (collected.size === 0) {
-    document.dispatchEvent(new CustomEvent('cards:info', { detail: { message: '图鉴还是空的' } }));
-    return;
-  }
-  // 简易确认（不引入 modal，用 toast 的二次点击确认）
+  if (collection.length === 0) { toast('图鉴还是空的', 'info'); return; }
   if (!handleReset._confirming) {
     handleReset._confirming = true;
-    document.dispatchEvent(new CustomEvent('cards:warning', {
-      detail: { message: `确定清空 ${collected.size} 张收藏？再点一次确认` },
-    }));
+    toast(`确定清空 ${collection.length} 张收藏？再点一次确认`, 'warning', 3000);
     setTimeout(() => { handleReset._confirming = false; }, 3000);
     return;
   }
   handleReset._confirming = false;
-  collected.clear();
-  storage.remove(STORAGE_KEY);
-  storage.remove(DRAW_LOG_KEY);
-  drawCount = 0;
+  collection = [];
+  storage.remove(COLLECTION_KEY);
+  storage.remove(HISTORY_KEY);
   renderStats();
-  renderLegend();
   renderCollection();
-  document.dispatchEvent(new CustomEvent('cards:success', { detail: { message: '已清空收藏' } }));
+  toast('已清空收藏', 'success');
+}
+
+/* ============ Toast 转发 ============ */
+function toast(msg, type, duration) {
+  document.dispatchEvent(new CustomEvent('cards:toast', { detail: { message: msg, type, duration } }));
 }
 
 /* ============ 模块导出 ============ */
 export const cardsModule = {
   async mount(container, app) {
-    loadPersisted();
+    loadCollection();
     renderSkeleton(container);
 
-    // 监听自定义事件转发到 app.toast
-    document.addEventListener('cards:new', (e) => {
-      const { card, rarity } = e.detail;
-      const messages = {
-        common: `新卡片：${card.title}`,
-        rare: `★ 稀有卡：${card.title}`,
-        epic: `★★ 史诗卡：${card.title}`,
-        legendary: `★★★ 传说卡！${card.title}`,
-      };
-      app.toast(messages[card.rarity] || messages.common, 'success', 3000);
+    // toast 转发
+    document.addEventListener('cards:toast', (e) => {
+      const { message, type = 'info', duration } = e.detail;
+      app.toast?.(message, type, duration);
     });
-    document.addEventListener('cards:info', (e) => app.toast(e.detail.message, 'info'));
-    document.addEventListener('cards:warning', (e) => app.toast(e.detail.message, 'warning', 3000));
-    document.addEventListener('cards:success', (e) => app.toast(e.detail.message, 'success'));
-    document.addEventListener('cards:error', (e) => app.toast(e.detail.message, 'error'));
+
+    // 抽卡按钮
+    $('#cards-draw-btn')?.addEventListener('click', handleDraw);
+    $('#cards-clear-btn')?.addEventListener('click', handleReset);
 
     try {
-      await loadCards();
+      await loadData();
+      renderDailyInfo();
       renderStats();
-      renderLegend();
       renderCollection();
+
+      // 定时刷新冷却状态
+      setInterval(renderDailyInfo, 60000);
     } catch (err) {
-      const stage = $('.cards-stage', container);
-      if (stage) {
-        stage.append(el('div', { class: 'cards-error' }, '卡片数据加载失败，请刷新重试'));
-      }
+      const stage = $('#cards-stage');
+      if (stage) stage.append(el('div', { class: 'cards-error' }, '数据加载失败，请刷新重试'));
     }
   },
 };
