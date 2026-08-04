@@ -676,11 +676,12 @@
 
 /* ============ 工具页返回地图按钮 ============ */
 /* 复用 island-page__back 设计语言，fixed 定位贴合视口左上角 */
+/* z-index 高于 topbar(--z-header:200)，确保不被顶部栏遮挡 */
 .tool-back {
   position: fixed;
   top: var(--space-4);
   left: var(--space-5);
-  z-index: 40;
+  z-index: var(--z-overlay);
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);

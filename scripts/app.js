@@ -107,8 +107,9 @@ class App {
   }
 
   /* ============ 视图切换 ============ */
-  switchView(view) {
-    if (view === this.state.view) return;
+  // fromIsland: 是否由点击 3D 岛屿触发（true=显示返回地图按钮，false=dock 菜单直达不显示）
+  switchView(view, fromIsland = false) {
+    if (view === this.state.view && view !== 'tools') return;
     if (view !== 'showcase' && view !== 'tools') return;
 
     const showcaseEl = this.els.showcaseView;
@@ -119,14 +120,16 @@ class App {
       toolsEl.hidden = false;
       document.body.dataset.view = 'tools';
       this._activateTool(this.state.currentTool);
-      // 显示返回地图按钮
-      this.els.toolBack?.classList.add('is-visible');
-      if (this.els.toolBack) this.els.toolBack.hidden = false;
+      // 仅点击 3D 岛屿进入时显示返回地图按钮，dock 菜单直达不显示
+      if (fromIsland) {
+        this.els.toolBack?.classList.add('is-visible');
+        if (this.els.toolBack) this.els.toolBack.hidden = false;
+      }
     } else {
       toolsEl.hidden = true;
       showcaseEl.hidden = false;
       document.body.dataset.view = 'showcase';
-      // 隐藏返回地图按钮
+      // 切回展示页始终隐藏返回按钮
       this.els.toolBack?.classList.remove('is-visible');
       if (this.els.toolBack) this.els.toolBack.hidden = true;
     }
@@ -137,9 +140,14 @@ class App {
   }
 
   /* ============ 工具切换 ============ */
-  openTool(toolName) {
+  // fromIsland: 同 switchView，控制返回按钮显隐
+  openTool(toolName, fromIsland = false) {
     if (this.state.view !== 'tools') {
-      this.switchView('tools');
+      this.switchView('tools', fromIsland);
+    } else if (fromIsland) {
+      // 已在工具页，但来自岛屿点击，需补显返回按钮
+      this.els.toolBack?.classList.add('is-visible');
+      if (this.els.toolBack) this.els.toolBack.hidden = false;
     }
     if (toolName === this.state.currentTool && this.state.view === 'tools') {
       return;

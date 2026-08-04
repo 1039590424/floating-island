@@ -3,7 +3,7 @@
 // index.html 唯一加载的脚本（type="module"）
 // 职责：初始化 App、注册所有模块、启动应用
 
-import { app } from './app.js?v=4';
+import { app } from './app.js?v=5';
 import { ready } from './utils/dom.js';
 import { dockComponent } from './components/dock.js';
 
@@ -48,9 +48,10 @@ async function bootstrap() {
   console.log('[main] mapSystem.init() 调用完成');
 
   // 设置工具岛屿点击回调：点击工具岛时切换到 tools-view 并打开对应工具
+  // fromIsland=true：显示"返回地图"按钮
   mapSystem.setToolIslandHandler?.((toolId) => {
-    app.switchView('tools');
-    app.openTool(toolId);
+    app.switchView('tools', true);
+    app.openTool(toolId, true);
   });
 
   // 应用就绪后的额外行为
