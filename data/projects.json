@@ -1,0 +1,99 @@
+{
+  "meta": {
+    "version": 1,
+    "description": "项目成果集 — 作品与案例"
+  },
+  "filters": [
+    { "id": "all",      "name": "全部" },
+    { "id": "product",  "name": "产品" },
+    { "id": "open",     "name": "开源" },
+    { "id": "side",     "name": "副业" },
+    { "id": "exp",      "name": "实验" }
+  ],
+  "projects": [
+    {
+      "id": "p001",
+      "title": "个人工作站",
+      "category": "side",
+      "categoryName": "副业",
+      "period": "2026",
+      "role": "独立设计与开发",
+      "desc": "一个展示与工具一体的个人网站，任天堂游戏风格，含抽卡机制与 AI 任务面板。",
+      "highlights": ["纯前端 ES Modules", "抽卡图鉴系统", "AI 任务执行特效"],
+      "tech": ["HTML", "CSS", "JavaScript", "localStorage"],
+      "color": "var(--color-primary)",
+      "stars": 4,
+      "links": { "demo": "#", "repo": "#" }
+    },
+    {
+      "id": "p002",
+      "title": "数据可视化平台",
+      "category": "product",
+      "categoryName": "产品",
+      "period": "2024 — 2025",
+      "role": "前端负责人",
+      "desc": "企业级数据看板，支持自定义图表拖拽、多数据源接入与实时刷新。",
+      "highlights": ["拖拽式编辑器", "10+ 图表类型", "毫秒级实时刷新"],
+      "tech": ["React", "TypeScript", "D3.js", "WebSocket"],
+      "color": "var(--color-secondary)",
+      "stars": 5,
+      "links": { "demo": "#" }
+    },
+    {
+      "id": "p003",
+      "title": "CLI 脚手架工具",
+      "category": "open",
+      "categoryName": "开源",
+      "period": "2023",
+      "role": "作者",
+      "desc": "一键生成项目模板的命令行工具，支持插件机制与自定义模板，GitHub 获 800+ star。",
+      "highlights": ["插件化架构", "20+ 内置模板", "800+ star"],
+      "tech": ["Node.js", "Inquirer", "package.json"],
+      "color": "var(--color-accent-green)",
+      "stars": 4,
+      "links": { "repo": "#" }
+    },
+    {
+      "id": "p004",
+      "title": "AI 写作助手",
+      "category": "exp",
+      "categoryName": "实验",
+      "period": "2025",
+      "role": "独立开发",
+      "desc": "基于大模型的写作辅助原型，支持续写、改写、风格迁移，流式输出体验。",
+      "highlights": ["流式响应", "上下文管理", "多风格切换"],
+      "tech": ["JavaScript", "fetch", "Server-Sent Events"],
+      "color": "var(--color-accent-purple)",
+      "stars": 4,
+      "links": { "demo": "#" }
+    },
+    {
+      "id": "p005",
+      "title": "组件库",
+      "category": "open",
+      "categoryName": "开源",
+      "period": "2022 — 2024",
+      "role": "核心贡献者",
+      "desc": "团队内部 UI 组件库，覆盖 50+ 通用组件，配套文档站点与可视化测试。",
+      "highlights": ["50+ 组件", "完整文档", "可视化测试"],
+      "tech": ["Vue", "SCSS", "Rollup"],
+      "color": "var(--color-accent-orange)",
+      "stars": 5,
+      "links": { "repo": "#" }
+    },
+    {
+      "id": "p006",
+      "title": "效率工具箱",
+      "category": "side",
+      "categoryName": "副业",
+      "period": "2024",
+      "role": "独立开发",
+      "desc": "聚合 30+ 日常小工具的纯前端应用，离线可用，已服务 5000+ 用户。",
+      "highlights": ["30+ 小工具", "PWA 离线", "5000+ 用户"],
+      "tech": ["JavaScript", "Service Worker", "IndexedDB"],
+      "color": "var(--color-accent-pink)",
+      "stars": 3,
+      "links": { "demo": "#" }
+    }
+  ]
+}

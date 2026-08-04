@@ -1,0 +1,222 @@
+/* knowledge.css
+   知识库模块样式
+   添加表单 + 搜索筛选 + 笔记列表
+*/
+
+.knowledge-module {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+/* ============ 添加表单 ============ */
+.kb-form {
+  padding: var(--space-4);
+  background: var(--color-surface);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.kb-form__row {
+  display: flex;
+  gap: var(--space-3);
+}
+.kb-form__input {
+  flex: 1;
+  padding: var(--space-3);
+  font-size: var(--fs-sm);
+  background: var(--color-bg-alt);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md);
+  transition: border-color var(--duration-fast), box-shadow var(--duration-fast);
+}
+.kb-form__input:focus {
+  border-color: var(--color-accent-purple);
+  box-shadow: 0 0 0 4px rgba(155, 126, 222, 0.18);
+}
+.kb-form__select {
+  width: auto;
+  padding: var(--space-3);
+  font-size: var(--fs-sm);
+  background: var(--color-bg-alt);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+}
+.kb-form__input--content {
+  font-family: var(--font-mono);
+  resize: vertical;
+  min-height: 60px;
+}
+.kb-form__actions {
+  display: flex;
+  justify-content: flex-end;
+}
+.kb-btn {
+  padding: var(--space-2) var(--space-4);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-bold);
+  font-family: var(--font-rounded);
+  color: var(--color-text);
+  background: var(--color-surface);
+  border: 2px solid var(--color-text);
+  border-radius: var(--radius-md);
+  box-shadow: 0 3px 0 var(--color-text);
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-bounce);
+}
+.kb-btn:hover { transform: translateY(-2px); box-shadow: 0 5px 0 var(--color-text); }
+.kb-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--color-text); }
+.kb-btn--primary {
+  background: var(--color-accent-purple);
+  color: var(--color-text-inverse);
+}
+
+/* ============ 工具栏 ============ */
+.kb-toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.kb-search {
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  font-size: var(--fs-sm);
+  background: var(--color-surface);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-full);
+  transition: border-color var(--duration-fast), box-shadow var(--duration-fast);
+}
+.kb-search:focus {
+  border-color: var(--color-accent-purple);
+  box-shadow: 0 0 0 4px rgba(155, 126, 222, 0.18);
+}
+.kb-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+.kb-filter {
+  padding: var(--space-1) var(--space-3);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-medium);
+  color: var(--color-text-secondary);
+  background: var(--color-bg-alt);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  transition: all var(--duration-fast);
+}
+.kb-filter:hover { color: var(--color-text); border-color: var(--color-border-strong); }
+.kb-filter.is-active {
+  color: var(--color-text-inverse);
+  background: var(--color-accent-purple);
+  border-color: var(--color-text);
+}
+
+/* ============ 笔记列表 ============ */
+.kb-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+.kb-note {
+  padding: var(--space-4);
+  background: var(--color-surface);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  transition: all var(--duration-fast) var(--ease-bounce);
+  position: relative;
+}
+.kb-note:hover {
+  transform: translateX(4px);
+  border-color: var(--color-accent-purple);
+  box-shadow: var(--shadow-md);
+}
+.kb-note__head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+}
+.kb-note__category {
+  padding: 2px var(--space-2);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-bold);
+  color: var(--color-text-inverse);
+  background: var(--color-accent-purple);
+  border-radius: var(--radius-sm);
+}
+.kb-note__time {
+  font-size: var(--fs-xs);
+  color: var(--color-text-muted);
+  font-family: var(--font-mono);
+}
+.kb-note__delete {
+  margin-left: auto;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--fs-md);
+  color: var(--color-text-muted);
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--duration-fast);
+  line-height: 1;
+}
+.kb-note__delete:hover {
+  color: var(--color-danger);
+  background: rgba(232, 63, 63, 0.1);
+  border-color: var(--color-danger);
+}
+.kb-note__title {
+  font-size: var(--fs-base);
+  font-family: var(--font-rounded);
+  font-weight: var(--fw-bold);
+  color: var(--color-text);
+  line-height: var(--lh-tight);
+}
+.kb-note__content {
+  margin-top: var(--space-2);
+  font-size: var(--fs-sm);
+  line-height: var(--lh-base);
+  color: var(--color-text-secondary);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.kb-note__link {
+  display: inline-block;
+  margin-top: var(--space-2);
+  font-size: var(--fs-sm);
+  color: var(--color-secondary);
+  word-break: break-all;
+}
+.kb-note__link:hover { text-decoration: underline; }
+
+/* ============ 空状态 ============ */
+.kb-empty {
+  padding: var(--space-7);
+  text-align: center;
+  color: var(--color-text-muted);
+}
+.kb-empty__icon { font-size: var(--fs-2xl); margin-bottom: var(--space-2); }
+
+.kb-count {
+  font-size: var(--fs-xs);
+  color: var(--color-text-muted);
+  text-align: center;
+  padding: var(--space-2);
+}
+
+/* ============ 响应式 ============ */
+@media (max-width: 640px) {
+  .kb-form__row { flex-direction: column; }
+}

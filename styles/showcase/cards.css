@@ -1,0 +1,529 @@
+/* cards.css
+   感悟卡片模块样式
+   含抽卡舞台、卡牌、卡背图案、图鉴网格
+*/
+
+/* ============ 模块容器 ============ */
+.cards-module {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+/* ============ 抽卡舞台 ============ */
+.cards-stage {
+  display: grid;
+  grid-template-columns: auto auto 1fr;
+  grid-template-areas: "deck button current";
+  align-items: center;
+  gap: var(--space-6);
+  padding: var(--space-6);
+  background:
+    radial-gradient(circle at 30% 50%, rgba(255, 210, 63, 0.12) 0%, transparent 50%),
+    radial-gradient(circle at 70% 50%, rgba(232, 63, 63, 0.08) 0%, transparent 50%),
+    var(--color-bg-alt);
+  border-radius: var(--radius-lg);
+  border: 2px dashed var(--color-border-strong);
+  min-height: 320px;
+  position: relative;
+  overflow: hidden;
+}
+
+/* 舞台装饰：四角小星 */
+.cards-stage::before,
+.cards-stage::after {
+  content: '✦';
+  position: absolute;
+  color: var(--color-accent-yellow);
+  font-size: var(--fs-sm);
+  opacity: 0.5;
+  animation: sparkle 3s ease-in-out infinite;
+}
+.cards-stage::before { top: var(--space-3); right: var(--space-4); }
+.cards-stage::after  { bottom: var(--space-3); left: var(--space-4); animation-delay: 1.5s; }
+
+/* ============ 卡组堆叠 ============ */
+.cards-deck {
+  grid-area: deck;
+  position: relative;
+  width: 140px;
+  height: 200px;
+  cursor: pointer;
+  transition: transform var(--duration-base) var(--ease-bounce);
+}
+.cards-deck:hover { transform: translateY(-4px) rotate(-2deg); }
+.cards-deck:active { transform: translateY(0) scale(0.96); }
+
+.cards-deck__layer {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius-md);
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+  border: 3px solid var(--color-text);
+  box-shadow: var(--shadow-md);
+}
+.cards-deck__layer--3 { transform: translate(8px, 8px) rotate(4deg); opacity: 0.5; }
+.cards-deck__layer--2 { transform: translate(6px, 6px) rotate(3deg); opacity: 0.7; }
+.cards-deck__layer--1 { transform: translate(3px, 3px) rotate(1.5deg); opacity: 0.85; }
+.cards-deck__layer--0 {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background:
+    repeating-linear-gradient(45deg,
+      rgba(255, 255, 255, 0.08) 0,
+      rgba(255, 255, 255, 0.08) 8px,
+      transparent 8px,
+      transparent 16px),
+    linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+}
+.cards-deck__icon {
+  font-size: var(--fs-2xl);
+  color: var(--color-accent-yellow);
+  text-shadow: 3px 3px 0 var(--color-text);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+/* 卡组震动 */
+.cards-deck.is-shaking {
+  animation: shake 0.4s ease-in-out;
+}
+.cards-deck.is-shaking .cards-deck__layer--0 .cards-deck__icon {
+  animation: bounceY 0.3s ease-in-out infinite;
+}
+
+/* ============ 抽卡按钮 ============ */
+.cards-draw-btn {
+  grid-area: button;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-5) var(--space-6);
+  background: linear-gradient(180deg, var(--color-accent-yellow) 0%, #F0B500 100%);
+  color: var(--color-text);
+  border: 3px solid var(--color-text);
+  border-radius: var(--radius-lg);
+  font-family: var(--font-rounded);
+  font-weight: var(--fw-black);
+  font-size: var(--fs-lg);
+  box-shadow:
+    0 6px 0 var(--color-text),
+    var(--shadow-md);
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-bounce);
+  position: relative;
+}
+.cards-draw-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 0 var(--color-text), var(--shadow-lg);
+}
+.cards-draw-btn:active {
+  transform: translateY(4px);
+  box-shadow: 0 2px 0 var(--color-text), var(--shadow-sm);
+}
+.cards-draw-btn:disabled,
+.cards-draw-btn.is-drawing {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: translateY(4px);
+  box-shadow: 0 2px 0 var(--color-text);
+}
+.cards-draw-btn__icon {
+  font-size: var(--fs-xl);
+  animation: bounceY 1.6s ease-in-out infinite;
+}
+.cards-draw-btn.is-drawing .cards-draw-btn__icon {
+  animation: spin 0.8s linear infinite;
+}
+
+/* ============ 当前卡牌区 ============ */
+.cards-current {
+  grid-area: current;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 240px;
+  gap: var(--space-4);
+}
+
+.card-flip-container {
+  width: 240px;
+  height: 340px;
+  perspective: 1200px;
+}
+
+/* 卡背飞入动画 */
+.card-back-flyin {
+  animation: cardDraw 0.6s var(--ease-bounce) both;
+}
+
+.cards-current__actions {
+  display: flex;
+  gap: var(--space-3);
+  margin-top: var(--space-3);
+}
+
+.cards-action-btn {
+  padding: var(--space-2) var(--space-4);
+  background: var(--color-secondary);
+  color: var(--color-text-inverse);
+  border: 2px solid var(--color-text);
+  border-radius: var(--radius-md);
+  font-family: var(--font-rounded);
+  font-weight: var(--fw-bold);
+  font-size: var(--fs-sm);
+  box-shadow: 0 3px 0 var(--color-text);
+  cursor: pointer;
+  transition: all var(--duration-fast) var(--ease-bounce);
+}
+.cards-action-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 0 var(--color-text);
+}
+.cards-action-btn:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 var(--color-text);
+}
+
+/* ============ 卡背图案 ============ */
+.card-back {
+  width: 100%;
+  height: 100%;
+  border-radius: var(--radius-md);
+  border: 3px solid var(--color-text);
+  background:
+    repeating-linear-gradient(45deg,
+      rgba(255, 255, 255, 0.08) 0,
+      rgba(255, 255, 255, 0.08) 12px,
+      transparent 12px,
+      transparent 24px),
+    linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+  box-shadow: var(--shadow-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.card-back__pattern {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 70%;
+  height: 70%;
+  border: 3px solid var(--color-accent-yellow);
+  border-radius: var(--radius-full);
+  background: rgba(0, 0, 0, 0.15);
+}
+.card-back__logo {
+  font-size: var(--fs-3xl);
+  color: var(--color-accent-yellow);
+  text-shadow: 4px 4px 0 var(--color-text);
+}
+
+/* ============ 卡面（insight-card）============ */
+.insight-card {
+  width: 100%;
+  height: 100%;
+  background: var(--color-surface);
+  border: 3px solid var(--color-text);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+  position: relative;
+}
+.insight-card__inner {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: var(--space-4);
+}
+.insight-card__rarity-bar {
+  height: 6px;
+  margin: calc(-1 * var(--space-4)) calc(-1 * var(--space-4)) var(--space-3);
+  border-bottom: 2px solid var(--color-text);
+}
+.insight-card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-3);
+}
+.insight-card__rarity {
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-bold);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.insight-card__category {
+  font-size: var(--fs-xs);
+  color: var(--color-text-muted);
+  background: var(--color-bg-alt);
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-full);
+  border: 1px solid var(--color-border);
+}
+.insight-card__body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  overflow-y: auto;
+}
+.insight-card__title {
+  font-size: var(--fs-lg);
+  font-family: var(--font-rounded);
+  color: var(--color-text);
+  line-height: var(--lh-tight);
+}
+.insight-card__text {
+  font-size: var(--fs-sm);
+  line-height: var(--lh-base);
+  color: var(--color-text-secondary);
+}
+.insight-card__footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: var(--space-3);
+  padding-top: var(--space-2);
+  border-top: 1px dashed var(--color-border);
+  font-size: var(--fs-xs);
+  color: var(--color-text-muted);
+}
+
+/* ============ 稀有度专属样式 ============ */
+.insight-card--legendary {
+  background: linear-gradient(135deg, #FFFBEB 0%, var(--color-surface) 100%);
+}
+.insight-card--legendary::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 20% 20%, rgba(255, 210, 63, 0.2) 0%, transparent 30%),
+    radial-gradient(circle at 80% 80%, rgba(255, 210, 63, 0.15) 0%, transparent 30%);
+  pointer-events: none;
+}
+.insight-card--epic {
+  background: linear-gradient(135deg, #F5F0FF 0%, var(--color-surface) 100%);
+}
+.insight-card--rare {
+  background: linear-gradient(135deg, #F0F7FF 0%, var(--color-surface) 100%);
+}
+
+.insight-card--legendary .insight-card__title {
+  background: linear-gradient(135deg, #C89A0E 0%, var(--rarity-legendary) 50%, #C89A0E 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* ============ 统计区 ============ */
+.cards-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-3);
+}
+.cards-stat {
+  text-align: center;
+  padding: var(--space-4) var(--space-2);
+  background: var(--color-surface);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--duration-fast) var(--ease-bounce);
+}
+.cards-stat:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+.cards-stat__value {
+  font-family: var(--font-rounded);
+  font-size: var(--fs-xl);
+  font-weight: var(--fw-black);
+  color: var(--color-primary);
+  line-height: 1;
+}
+.cards-stat__label {
+  margin-top: var(--space-2);
+  font-size: var(--fs-xs);
+  color: var(--color-text-secondary);
+}
+
+/* ============ 稀有度图例 ============ */
+.cards-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-bg-alt);
+  border-radius: var(--radius-md);
+}
+.cards-legend__item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--fs-sm);
+}
+.cards-legend__dot {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: var(--radius-full);
+  border: 2px solid var(--color-text);
+}
+.rarity--common    .cards-legend__dot { background: var(--rarity-common); }
+.rarity--rare      .cards-legend__dot { background: var(--rarity-rare); }
+.rarity--epic      .cards-legend__dot { background: var(--rarity-epic); }
+.rarity--legendary .cards-legend__dot {
+  background: var(--rarity-legendary);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+.cards-legend__name {
+  font-weight: var(--fw-medium);
+  color: var(--color-text);
+}
+.cards-legend__count {
+  color: var(--color-text-muted);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+}
+
+/* ============ 图鉴网格 ============ */
+.cards-collection__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-4);
+  padding-bottom: var(--space-3);
+  border-bottom: 2px dashed var(--color-border);
+}
+.cards-collection__title {
+  font-size: var(--fs-md);
+  font-family: var(--font-rounded);
+}
+.cards-collection__btn {
+  padding: var(--space-2) var(--space-3);
+  background: transparent;
+  color: var(--color-text-muted);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-sm);
+  font-size: var(--fs-xs);
+  cursor: pointer;
+  transition: all var(--duration-fast);
+}
+.cards-collection__btn:hover {
+  background: var(--color-danger);
+  color: var(--color-text-inverse);
+  border-color: transparent;
+}
+
+.cards-collection__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: var(--space-3);
+}
+
+.collection-card {
+  position: relative;
+  aspect-ratio: 3 / 4;
+  padding: var(--space-3);
+  background: var(--color-surface);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  cursor: pointer;
+  overflow: hidden;
+  transition: all var(--duration-fast) var(--ease-bounce);
+}
+.collection-card:hover {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: var(--shadow-lg);
+}
+.collection-card:active { transform: translateY(0) scale(0.98); }
+
+.collection-card--legendary { border-color: var(--rarity-legendary); border-width: 3px; }
+.collection-card--epic      { border-color: var(--rarity-epic); }
+.collection-card--rare      { border-color: var(--rarity-rare); }
+.collection-card--common    { border-color: var(--color-border); }
+
+.collection-card__rarity {
+  font-size: 10px;
+  font-weight: var(--fw-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.collection-card__title {
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-bold);
+  font-family: var(--font-rounded);
+  color: var(--color-text);
+  line-height: var(--lh-tight);
+}
+.collection-card__icon {
+  align-self: flex-end;
+  font-size: var(--fs-xl);
+  color: var(--color-accent-yellow);
+}
+
+/* 未解锁状态 */
+.collection-card.is-locked {
+  background: var(--color-bg-alt);
+  cursor: not-allowed;
+}
+.collection-card.is-locked .collection-card__title,
+.collection-card.is-locked .collection-card__rarity {
+  color: var(--color-text-muted);
+  filter: blur(2px);
+  user-select: none;
+}
+.collection-card.is-locked .collection-card__icon {
+  color: var(--color-text-muted);
+  opacity: 0.4;
+}
+.collection-card.is-locked::after {
+  content: '🔒';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: var(--fs-2xl);
+  opacity: 0.5;
+}
+
+/* ============ 错误状态 ============ */
+.cards-error {
+  padding: var(--space-4);
+  text-align: center;
+  color: var(--color-danger);
+  background: rgba(232, 63, 63, 0.08);
+  border: 1px dashed var(--color-danger);
+  border-radius: var(--radius-md);
+}
+
+/* ============ 响应式 ============ */
+@media (max-width: 768px) {
+  .cards-stage {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "deck"
+      "button"
+      "current";
+    justify-items: center;
+    text-align: center;
+  }
+  .cards-stats { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 480px) {
+  .cards-deck { width: 110px; height: 160px; }
+  .cards-deck__icon { font-size: var(--fs-xl); }
+  .card-flip-container { width: 200px; height: 280px; }
+  .cards-draw-btn { font-size: var(--fs-md); padding: var(--space-4) var(--space-5); }
+}

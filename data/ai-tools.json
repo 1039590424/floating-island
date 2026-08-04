@@ -1,0 +1,292 @@
+{
+  "categories": [
+    {
+      "id": "general",
+      "name": "通用 AI 助手",
+      "icon": "✦",
+      "desc": "日常问答、写作、翻译、代码辅助"
+    },
+    {
+      "id": "image",
+      "name": "AI 图像创作",
+      "icon": "🎨",
+      "desc": "文生图、图片编辑、视觉设计"
+    },
+    {
+      "id": "video",
+      "name": "AI 视频生成",
+      "icon": "🎬",
+      "desc": "文生视频、视频编辑、动画制作"
+    },
+    {
+      "id": "pm",
+      "name": "产品经理专属",
+      "icon": "📋",
+      "desc": "需求分析、原型设计、用户研究"
+    },
+    {
+      "id": "dev",
+      "name": "开发者工具",
+      "icon": "⚡",
+      "desc": "代码生成、调试、架构设计"
+    },
+    {
+      "id": "writing",
+      "name": "内容创作",
+      "icon": "✍",
+      "desc": "文案、营销、SEO、社媒运营"
+    }
+  ],
+  "tools": [
+    {
+      "id": "doubao",
+      "name": "豆包",
+      "url": "https://www.doubao.com",
+      "category": "general",
+      "desc": "字节跳动旗下 AI 助手，支持对话、写作、翻译、代码",
+      "tags": ["对话", "写作", "免费"],
+      "color": "#3B82F6",
+      "featured": true
+    },
+    {
+      "id": "kimi",
+      "name": "Kimi",
+      "url": "https://kimi.moonshot.cn",
+      "category": "general",
+      "desc": "月之暗面出品，超长上下文，擅长文档分析与长文阅读",
+      "tags": ["长文本", "文档分析", "免费"],
+      "color": "#1A1A1A",
+      "featured": true
+    },
+    {
+      "id": "deepseek",
+      "name": "DeepSeek",
+      "url": "https://www.deepseek.com",
+      "category": "general",
+      "desc": "深度求索，推理能力强，开源生态，性价比高",
+      "tags": ["推理", "开源", "便宜"],
+      "color": "#4D6BFE",
+      "featured": true
+    },
+    {
+      "id": "chatgpt",
+      "name": "ChatGPT",
+      "url": "https://chat.openai.com",
+      "category": "general",
+      "desc": "OpenAI 旗舰产品，GPT 系列模型，全球最流行的 AI 助手",
+      "tags": ["对话", "插件", "GPT"],
+      "color": "#10A37F",
+      "featured": true
+    },
+    {
+      "id": "claude",
+      "name": "Claude",
+      "url": "https://claude.ai",
+      "category": "general",
+      "desc": "Anthropic 出品，擅长长文写作与代码，上下文理解强",
+      "tags": ["写作", "代码", "安全"],
+      "color": "#D97757",
+      "featured": true
+    },
+    {
+      "id": "jimeng",
+      "name": "即梦",
+      "url": "https://jimeng.jianying.com",
+      "category": "image",
+      "desc": "字节跳动 AI 创作平台，文生图、图生图、智能画布",
+      "tags": ["文生图", "免费", "中文"],
+      "color": "#FF6B35",
+      "featured": true
+    },
+    {
+      "id": "midjourney",
+      "name": "Midjourney",
+      "url": "https://www.midjourney.com",
+      "category": "image",
+      "desc": "全球顶级文生图工具，艺术质感强，适合创意设计",
+      "tags": ["文生图", "艺术", "付费"],
+      "color": "#7C3AED",
+      "featured": true
+    },
+    {
+      "id": "stable-diffusion",
+      "name": "Stable Diffusion",
+      "url": "https://stability.ai",
+      "category": "image",
+      "desc": "开源图像生成模型，可本地部署，社区生态丰富",
+      "tags": ["开源", "本地部署", "可控"],
+      "color": "#0EA5E9",
+      "featured": false
+    },
+    {
+      "id": "liblib",
+      "name": "哩布哩布",
+      "url": "https://www.liblib.art",
+      "category": "image",
+      "desc": "国内 SD 模型社区，海量 LoRA 模型在线使用",
+      "tags": ["模型社区", "LoRA", "中文"],
+      "color": "#F43F5E",
+      "featured": false
+    },
+    {
+      "id": "seedream",
+      "name": "Seedream",
+      "url": "https://seedream.ai",
+      "category": "image",
+      "desc": "豆包大模型图像生成，中文理解强，质量高",
+      "tags": ["文生图", "字节", "中文"],
+      "color": "#8B5CF6",
+      "featured": false
+    },
+    {
+      "id": "sora",
+      "name": "Sora",
+      "url": "https://sora.com",
+      "category": "video",
+      "desc": "OpenAI 文生视频，电影级画面质感，最长 60 秒",
+      "tags": ["文生视频", "电影级", "付费"],
+      "color": "#000000",
+      "featured": true
+    },
+    {
+      "id": "kling",
+      "name": "可灵 AI",
+      "url": "https://kling.kuaishou.com",
+      "category": "video",
+      "desc": "快手文生视频，中文优化，最长可达数分钟",
+      "tags": ["文生视频", "中文", "免费试用"],
+      "color": "#FF4D4F",
+      "featured": true
+    },
+    {
+      "id": "runway",
+      "name": "Runway",
+      "url": "https://runwayml.com",
+      "category": "video",
+      "desc": "老牌 AI 视频工具，Gen-3 模型，专业创作者首选",
+      "tags": ["视频编辑", "专业", "付费"],
+      "color": "#06B6D4",
+      "featured": false
+    },
+    {
+      "id": "hailuo",
+      "name": "海螺 AI",
+      "url": "https://hailuoai.video",
+      "category": "video",
+      "desc": "MiniMax 文生视频，动作连贯，适合人物与场景",
+      "tags": ["文生视频", "中文", "免费试用"],
+      "color": "#14B8A6",
+      "featured": false
+    },
+    {
+      "id": "axure-ai",
+      "name": "墨刀 AI",
+      "url": "https://modao.cc",
+      "category": "pm",
+      "desc": "在线原型设计，AI 辅助生成页面，团队协作",
+      "tags": ["原型", "协作", "中文"],
+      "color": "#3B82F6",
+      "featured": true
+    },
+    {
+      "id": "xiaopiu",
+      "name": "小猪 AI",
+      "url": "https://www.xiaopiu.com",
+      "category": "pm",
+      "desc": "AI 生成原型与流程图，需求文档自动撰写",
+      "tags": ["原型", "PRD", "中文"],
+      "color": "#F97316",
+      "featured": false
+    },
+    {
+      "id": "userize",
+      "name": "Userize",
+      "url": "https://userize.ai",
+      "category": "pm",
+      "desc": "AI 用户研究助手，访谈分析与画像生成",
+      "tags": ["用户研究", "访谈", "画像"],
+      "color": "#8B5CF6",
+      "featured": false
+    },
+    {
+      "id": "pm-ai",
+      "name": "PMChat",
+      "url": "https://pmchat.cn",
+      "category": "pm",
+      "desc": "产品经理 AI 助手，需求拆解、竞品分析、数据洞察",
+      "tags": ["需求分析", "竞品", "中文"],
+      "color": "#EC4899",
+      "featured": true
+    },
+    {
+      "id": "trae",
+      "name": "TRAE",
+      "url": "https://www.trae.cn",
+      "category": "dev",
+      "desc": "字节 AI 原生 IDE，智能代码补全与全栈开发",
+      "tags": ["IDE", "代码", "免费"],
+      "color": "#FF6B35",
+      "featured": true
+    },
+    {
+      "id": "cursor",
+      "name": "Cursor",
+      "url": "https://cursor.com",
+      "category": "dev",
+      "desc": "AI 代码编辑器，基于 VS Code，对话式编程",
+      "tags": ["IDE", "代码", "付费"],
+      "color": "#000000",
+      "featured": true
+    },
+    {
+      "id": "copilot",
+      "name": "GitHub Copilot",
+      "url": "https://github.com/features/copilot",
+      "category": "dev",
+      "desc": "GitHub AI 编程助手，代码补全与 Chat",
+      "tags": ["补全", "Chat", "付费"],
+      "color": "#24292E",
+      "featured": false
+    },
+    {
+      "id": "v0",
+      "name": "v0",
+      "url": "https://v0.dev",
+      "category": "dev",
+      "desc": "Vercel 出品，AI 生成 React UI，前端快速搭建",
+      "tags": ["UI 生成", "React", "免费试用"],
+      "color": "#000000",
+      "featured": false
+    },
+    {
+      "id": "notion-ai",
+      "name": "Notion AI",
+      "url": "https://www.notion.so/product/ai",
+      "category": "writing",
+      "desc": "集成在 Notion 中的 AI 写作助手，文档总结与生成",
+      "tags": ["文档", "总结", "付费"],
+      "color": "#000000",
+      "featured": true
+    },
+    {
+      "id": "feishu-ai",
+      "name": "飞书 AI",
+      "url": "https://www.feishu.cn/product/ai",
+      "category": "writing",
+      "desc": "飞书办公套件 AI 助手，会议总结、文档生成、表格分析",
+      "tags": ["办公", "协作", "中文"],
+      "color": "#00D6B9",
+      "featured": false
+    },
+    {
+      "id": "yiyan",
+      "name": "文心一言",
+      "url": "https://yiyan.baidu.com",
+      "category": "writing",
+      "desc": "百度 AI，中文创作强，集成搜索与知识图谱",
+      "tags": ["中文", "搜索", "免费"],
+      "color": "#2932E1",
+      "featured": false
+    }
+  ]
+}

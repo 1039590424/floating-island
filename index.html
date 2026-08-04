@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="个人工作站 — 浮空岛世界，展示与工具一体的个人站">
+  <title>个人工作站 · 浮空岛</title>
+  <link rel="stylesheet" href="styles/main.css?v=9">
+  <!-- Three.js importmap：从 CDN 引入，无需构建工具 -->
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+    }
+  }
+  </script>
+</head>
+<body>
+  <div id="app">
+
+    <!-- ============ 顶部栏 / Top Bar ============ -->
+    <header class="topbar">
+      <div class="topbar__inner">
+        <a class="topbar__brand" href="#top" aria-label="返回首页">
+          <span class="brand__mark" aria-hidden="true">★</span>
+          <span class="brand__text">个人工作站</span>
+        </a>
+        <span class="topbar__mode-badge" id="mode-badge" aria-live="polite">展示</span>
+        <button class="topbar__theme-toggle" id="theme-toggle" type="button" aria-label="切换主题">
+          <span class="theme-icon theme-icon--sun" aria-hidden="true">☀</span>
+          <span class="theme-icon theme-icon--moon" aria-hidden="true">☾</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- ============ 主内容区 ============ -->
+    <div class="layout" id="main">
+
+      <!-- ============ 展示层 / Showcase Layer（3D 世界地图）============ -->
+      <main class="showcase-view" id="showcase-view" data-view="showcase" role="main">
+
+        <!-- 3D 地图视口：Three.js 渲染真 3D 浮空岛 -->
+        <div class="map-viewport" id="map-viewport">
+          <!-- Three.js Canvas 容器（由 map3d.js 挂载，岛屿标签已改为 3D Sprite 内嵌）-->
+          <div class="map-3d-container" id="map-3d-container"></div>
+
+          <!-- 岛屿全屏页面（人物跳岛落地后展开）-->
+          <div class="island-page" id="island-page" role="dialog" aria-modal="true" aria-hidden="true">
+            <div class="island-page__inner">
+              <!-- 各模块内容区（由 app.js 挂载）-->
+              <div class="island-page__body" data-panel="about" data-mount="about" style="display:none">
+                <div class="placeholder-card">玩家档案加载中</div>
+              </div>
+              <div class="island-page__body" data-panel="portal" data-mount="portal" style="display:none">
+                <div class="placeholder-card">传送门加载中</div>
+              </div>
+              <div class="island-page__body" data-panel="skills" data-mount="skills" style="display:none">
+                <div class="placeholder-card">该模块待加载</div>
+              </div>
+              <div class="island-page__body" data-panel="projects" data-mount="projects" style="display:none">
+                <div class="placeholder-card">该模块待加载</div>
+              </div>
+              <div class="island-page__body" data-panel="cards" data-mount="cards" style="display:none">
+                <div class="placeholder-card">该模块待加载</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 返回按钮（独立于 island-page，避免 transform 影响 fixed 定位）-->
+          <button class="island-page__back" id="island-page-back" type="button" aria-label="返回地图" hidden>
+            <span class="island-page__back-icon" aria-hidden="true">←</span>
+            <span class="island-page__back-text">返回地图</span>
+          </button>
+
+          <!-- 地图控制栏 -->
+          <div class="map-controls" role="toolbar" aria-label="地图控制">
+            <button class="map-control__btn map-control--zoom-in" type="button" aria-label="放大">+</button>
+            <button class="map-control__btn map-control--zoom-out" type="button" aria-label="缩小">−</button>
+            <button class="map-control__btn map-control--reset" type="button" aria-label="回到主页">⌂</button>
+          </div>
+
+          <!-- 操作提示 -->
+          <div class="map-hint" id="map-hint">
+            <span class="map-hint__icon">✦</span>
+            <span>拖拽旋转视角</span>
+            <span class="map-hint__divider"></span>
+            <span>滚轮缩放</span>
+            <span class="map-hint__divider"></span>
+            <span>点击岛屿进入</span>
+          </div>
+
+        </div>
+      </main>
+
+      <!-- ============ 工具层 / Tool Layer（dock 切换后可见）============ -->
+      <main class="tools-view" id="tools-view" data-view="tools" role="main" hidden>
+
+        <section class="tool-section is-active" id="dashboard" data-module="dashboard" aria-labelledby="dashboard-title">
+          <header class="tool-section__header">
+            <h2 id="dashboard-title" class="tool-section__title">工作台</h2>
+            <p class="tool-section__subtitle">Dashboard</p>
+          </header>
+          <div class="tool-section__body" data-mount="dashboard">
+            <div class="placeholder-card">该模块待加载</div>
+          </div>
+        </section>
+
+        <section class="tool-section" id="quicktools" data-module="quicktools" aria-labelledby="quicktools-title" hidden>
+          <header class="tool-section__header">
+            <h2 id="quicktools-title" class="tool-section__title">工具台</h2>
+            <p class="tool-section__subtitle">AI Tool Hub</p>
+          </header>
+          <div class="tool-section__body" data-mount="quicktools">
+            <div class="placeholder-card">该模块待加载</div>
+          </div>
+        </section>
+
+        <section class="tool-section" id="knowledge" data-module="knowledge" aria-labelledby="knowledge-title" hidden>
+          <header class="tool-section__header">
+            <h2 id="knowledge-title" class="tool-section__title">知识库</h2>
+            <p class="tool-section__subtitle">Knowledge Base</p>
+          </header>
+          <div class="tool-section__body" data-mount="knowledge">
+            <div class="placeholder-card">该模块待加载</div>
+          </div>
+        </section>
+
+        <section class="tool-section" id="tasks" data-module="tasks" aria-labelledby="tasks-title" hidden>
+          <header class="tool-section__header">
+            <h2 id="tasks-title" class="tool-section__title">任务与日程</h2>
+            <p class="tool-section__subtitle">Tasks & Schedule</p>
+          </header>
+          <div class="tool-section__body" data-mount="tasks">
+            <div class="placeholder-card">该模块待加载</div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <!-- ============ 底部悬浮命令岛 / Dock（Joy-Con 风格）============ -->
+    <nav class="dock" id="dock" data-mount="dock" role="navigation" aria-label="主导航">
+      <button class="dock__item dock__item--primary" data-action="switch-view" data-view="showcase" type="button" aria-label="展示页">
+        <span class="dock__item-icon" aria-hidden="true">◆</span>
+        <span class="dock__label">展示页</span>
+      </button>
+      <button class="dock__item dock__item--secondary" data-action="open-tool" data-tool="quicktools" type="button" aria-label="工具台">
+        <span class="dock__item-icon" aria-hidden="true">⚡</span>
+        <span class="dock__label">工具台</span>
+      </button>
+
+      <span class="dock__divider" role="separator" aria-hidden="true"></span>
+
+      <button class="dock__item" data-action="open-tool" data-tool="dashboard" type="button" aria-label="工作台">
+        <span class="dock__item-icon" aria-hidden="true">⌂</span>
+        <span class="dock__label">工作台</span>
+      </button>
+      <button class="dock__item" data-action="open-tool" data-tool="knowledge" type="button" aria-label="知识库">
+        <span class="dock__item-icon" aria-hidden="true">📖</span>
+        <span class="dock__label">知识库</span>
+      </button>
+      <button class="dock__item" data-action="open-tool" data-tool="tasks" type="button" aria-label="任务日程">
+        <span class="dock__item-icon" aria-hidden="true">☑</span>
+        <span class="dock__label">任务日程</span>
+      </button>
+
+      <span class="dock__divider" role="separator" aria-hidden="true"></span>
+
+      <a class="dock__item" href="#about" data-action="scroll-to" aria-label="关于我">
+        <span class="dock__item-icon" aria-hidden="true">○</span>
+        <span class="dock__label">关于我</span>
+      </a>
+      <a class="dock__item" href="#cards" data-action="scroll-to" aria-label="感悟卡片">
+        <span class="dock__item-icon" aria-hidden="true">✦</span>
+        <span class="dock__label">感悟卡片</span>
+      </a>
+    </nav>
+
+    <!-- ============ 全局提示 / Toast 容器 ============ -->
+    <div class="toast-container" id="toast-container" aria-live="polite" aria-atomic="true"></div>
+
+  </div>
+
+  <script type="module" src="scripts/main.js?v=20m"></script>
+</body>
+</html>

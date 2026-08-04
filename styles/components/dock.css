@@ -1,0 +1,395 @@
+/* dock.css
+   底部悬浮命令岛（Joy-Con Dock）
+   替代传统侧边栏，常驻底部居中，hover 放大弹起，致敬任天堂 Joy-Con 设计
+   包含：顶部栏 + 主布局 + Dock 命令岛 + Toast
+*/
+
+/* ============ 顶部栏 / Topbar ============ */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-header);
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  border-bottom: 1px solid var(--glass-border);
+  transition: background var(--transition-base), border-color var(--transition-base);
+}
+
+.topbar__inner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  height: var(--header-height);
+  padding: 0 var(--space-5);
+  max-width: var(--content-max-width);
+  margin: 0 auto;
+}
+
+/* 品牌标识 */
+.topbar__brand {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-text);
+  font-family: var(--font-rounded);
+  font-weight: var(--fw-bold);
+  font-size: var(--fs-md);
+  transition: transform var(--duration-fast) var(--ease-bounce);
+}
+.topbar__brand:hover { transform: scale(1.03); color: var(--color-text); }
+.brand__mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  background: linear-gradient(135deg, var(--nintendo-red) 0%, var(--nintendo-red-light) 100%);
+  color: var(--color-text-inverse);
+  border-radius: var(--radius-md);
+  font-size: var(--fs-md);
+  box-shadow: 0 2px 12px var(--nintendo-red-glow), inset 0 -3px 0 rgba(0, 0, 0, 0.2);
+  animation: starSpin 12s linear infinite;
+}
+
+/* 模式徽章 */
+.topbar__mode-badge {
+  margin-left: auto;
+  padding: var(--space-1) var(--space-3);
+  background: var(--glass-bg-subtle);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: var(--color-text-secondary);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-medium);
+  border-radius: var(--radius-full);
+  border: 1px solid var(--glass-border);
+  transition: all var(--transition-base);
+}
+.topbar__mode-badge[data-view="tools"] {
+  background: var(--nintendo-blue);
+  color: var(--color-text-inverse);
+  border-color: transparent;
+  box-shadow: 0 2px 8px var(--nintendo-blue-glow);
+}
+.topbar__mode-badge[data-view="showcase"] {
+  background: var(--nintendo-red);
+  color: var(--color-text-inverse);
+  border-color: transparent;
+  box-shadow: 0 2px 8px var(--nintendo-red-glow);
+}
+
+/* 主题切换按钮 */
+.topbar__theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  color: var(--color-text);
+  background: var(--glass-bg-subtle);
+  border: 1px solid var(--glass-border);
+  transition: all var(--duration-fast) var(--ease-bounce);
+}
+.topbar__theme-toggle:hover {
+  background: var(--glass-bg-strong);
+  transform: scale(1.08) rotate(8deg);
+}
+.topbar__theme-toggle:active { transform: scale(0.92); }
+.theme-icon { font-size: var(--fs-md); transition: opacity var(--duration-fast); }
+[data-theme="light"] .theme-icon--moon { display: none; }
+[data-theme="dark"] .theme-icon--sun { display: none; }
+
+/* ============ 主布局 ============ */
+/* 展示页：3D 视口独占整屏，不加 padding，避免出现滚动条 */
+.layout:has(.showcase-view:not([hidden])) {
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  min-height: 0;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+/* showcase-view 作为 flex 子项填满 layout 剩余空间 */
+.layout:has(.showcase-view:not([hidden])) .showcase-view {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* 工具页：弹性布局占满整个浏览器，无 max-width 限制 */
+.layout:has(.tools-view:not([hidden])) {
+  max-width: none;
+  margin: 0;
+  padding: var(--space-6) var(--space-6);
+  padding-bottom: calc(var(--dock-height) + var(--space-6));
+  min-height: 0;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.showcase-view,
+.tools-view {
+  display: block;
+  animation: viewFadeIn var(--duration-slow) var(--ease-out-back);
+}
+
+/* 工具视图作为 flex 子项填满 layout */
+.tools-view:not([hidden]) {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 展示层区块样式已迁移至 showcase/world.css（浮空岛体系）*/
+
+/* ============ 工具层区块 ============ */
+/* 工具区块：填满父容器宽度，弹性高度 */
+.tool-section {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+.tool-section__header {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+  margin-bottom: var(--space-5);
+  flex-shrink: 0;
+}
+.tool-section__title { font-size: var(--fs-xl); margin: 0; }
+.tool-section__subtitle {
+  color: var(--color-text-muted);
+  font-size: var(--fs-sm);
+  font-family: var(--font-mono);
+}
+.tool-section.is-active { animation: viewFadeIn var(--duration-slow) var(--ease-out-back); }
+/* 工具区块内容区：填满剩余高度 */
+.tool-section__body {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+.tool-section__body > * {
+  flex: 1 1 auto;
+  width: 100%;
+}
+
+/* 占位卡片 */
+.placeholder-card {
+  padding: var(--space-6);
+  text-align: center;
+  color: var(--color-text-muted);
+  background: var(--glass-bg-subtle);
+  border: 1px dashed var(--color-border-strong);
+  border-radius: var(--radius-md);
+  font-size: var(--fs-sm);
+}
+
+/* ============ 底部悬浮命令岛 / Dock ============ */
+/* 致敬任天堂 Joy-Con：底部居中悬浮玻璃胶囊，图标 hover 放大弹起 */
+.dock {
+  position: fixed;
+  bottom: var(--space-5);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: var(--z-dock);
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-2);
+  padding: var(--space-2);
+  background: var(--glass-bg-strong);
+  backdrop-filter: blur(var(--glass-blur-strong)) saturate(var(--glass-saturate));
+  -webkit-backdrop-filter: blur(var(--glass-blur-strong)) saturate(var(--glass-saturate));
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--glass-shadow-strong);
+  /* 镜面高光 */
+  position: fixed;
+}
+.dock::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--glass-highlight);
+  border-radius: inherit;
+  pointer-events: none;
+}
+.dock::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: inset 0 1px 0 var(--glass-border-inner), inset 0 -1px 0 rgba(0, 0, 0, 0.05);
+  pointer-events: none;
+}
+
+/* Dock 内部分隔线（致敬 Joy-Con 中线） */
+.dock__divider {
+  width: 1px;
+  height: 32px;
+  background: var(--color-border);
+  align-self: center;
+  margin: 0 var(--space-1);
+  flex-shrink: 0;
+}
+
+/* Dock 图标项 */
+.dock__item {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--dock-item-size);
+  height: var(--dock-item-size);
+  border-radius: var(--radius-lg);
+  color: var(--color-text-secondary);
+  background: transparent;
+  border: 1px solid transparent;
+  font-size: var(--fs-lg);
+  flex-shrink: 0;
+  transition: transform var(--duration-base) var(--ease-spring),
+              background var(--duration-fast),
+              color var(--duration-fast),
+              box-shadow var(--duration-base);
+  cursor: pointer;
+}
+.dock__item:hover {
+  transform: translateY(-10px) scale(1.18);
+  background: var(--glass-bg-strong);
+  color: var(--nintendo-red);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1), 0 0 16px var(--nintendo-red-soft);
+}
+.dock__item:active {
+  transform: translateY(-4px) scale(1.05);
+  transition-duration: var(--duration-fast);
+}
+
+/* 激活态：底部指示点 + 任天堂红 */
+.dock__item.is-active {
+  color: var(--nintendo-red);
+  background: var(--glass-bg-strong);
+}
+.dock__item.is-active::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 6px;
+  height: 6px;
+  border-radius: var(--radius-full);
+  background: var(--nintendo-red);
+  box-shadow: 0 0 8px var(--nintendo-red);
+  animation: pulseDot 1.8s ease-in-out infinite;
+}
+
+/* hover 时标签提示 */
+.dock__label {
+  position: absolute;
+  bottom: calc(100% + 12px);
+  left: 50%;
+  transform: translateX(-50%) translateY(4px);
+  padding: var(--space-1) var(--space-3);
+  background: var(--color-text);
+  color: var(--color-text-inverse);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-medium);
+  border-radius: var(--radius-sm);
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--duration-fast), transform var(--duration-fast) var(--ease-bounce);
+}
+.dock__label::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 4px solid transparent;
+  border-top-color: var(--color-text);
+}
+.dock__item:hover .dock__label {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* 图标双色描边（致敬 Joy-Con 红蓝配对） */
+.dock__item-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+}
+.dock__item--primary:hover { color: var(--nintendo-red); }
+.dock__item--secondary:hover { color: var(--nintendo-blue); }
+
+/* ============ Toast 提示 ============ */
+.toast-container {
+  position: fixed;
+  bottom: calc(var(--dock-height) + var(--space-6));
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: var(--z-toast);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  pointer-events: none;
+}
+.toast {
+  padding: var(--space-3) var(--space-5);
+  background: var(--glass-bg-strong);
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  border: 1px solid var(--glass-border);
+  color: var(--color-text);
+  border-radius: var(--radius-full);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-medium);
+  box-shadow: var(--glass-shadow-strong);
+  opacity: 0;
+  transform: translateY(20px) scale(0.9);
+  transition: all var(--duration-base) var(--ease-bounce);
+  white-space: nowrap;
+  max-width: 90vw;
+}
+.toast.is-visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+.toast--success { color: var(--nintendo-green); }
+.toast--error { color: var(--nintendo-red); }
+.toast--warning { color: var(--nintendo-orange); }
+.toast--info { color: var(--nintendo-blue); }
+
+/* ============ 响应式 ============ */
+@media (max-width: 640px) {
+  .topbar__inner { padding: 0 var(--space-4); gap: var(--space-3); }
+  .brand__text { display: none; }
+  .topbar__mode-badge { font-size: 10px; padding: 2px var(--space-2); }
+  .layout { padding: var(--space-4) var(--space-3); padding-bottom: calc(var(--dock-height) + var(--space-5)); }
+
+  /* 移动端 dock：缩小图标，减少间距 */
+  :root {
+    --dock-item-size: 40px;
+    --dock-item-size-hover: 52px;
+  }
+  .dock { gap: var(--space-1); padding: var(--space-1); bottom: var(--space-3); }
+  .dock__item { font-size: var(--fs-md); }
+  .dock__item:hover { transform: translateY(-6px) scale(1.1); }
+  .dock__label { font-size: 10px; bottom: calc(100% + 8px); }
+  .dock__divider { height: 24px; }
+  .toast-container { bottom: calc(var(--dock-height) + var(--space-4)); }
+}

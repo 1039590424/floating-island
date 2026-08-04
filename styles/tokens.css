@@ -1,0 +1,350 @@
+/* tokens.css
+   暮光墨色（Twilight Ink）设计令牌
+   设计哲学：苹果式克制基底 + taupe 暖中性 + 焦糖铜点缀
+   参考：Apple HIG（#1D1D1F / #F5F5F7 / #1C1C1E）+ 2026 奢侈品配色（taupe / 香槟金 / 深墨）
+   原则：少色（3-4 色封顶）、低饱和、高质感、任天堂基因仅作稀有度点缀
+*/
+
+/* ============ 根令牌 ============ */
+:root {
+  /* ---- 主色调：墨黑系（Apple HIG 风格，作为主操作色）---- */
+  --color-primary: #1D1D1F;            /* Apple 墨黑：主操作、CTA、强调文本 */
+  --color-primary-dark: #000000;
+  --color-primary-light: #424245;
+  --color-primary-soft: rgba(29, 29, 31, 0.06);   /* 主色浅化：背景填充 */
+  --color-primary-softer: rgba(29, 29, 31, 0.03);
+
+  /* ---- 次强调色：焦糖铜（替代任天堂高饱和红蓝，温暖且有质感）---- */
+  --color-accent: #8B5E3C;             /* 焦糖铜：温暖点缀、品牌识别 */
+  --color-accent-dark: #6B4523;
+  --color-accent-light: #A87A52;
+  --color-accent-soft: rgba(139, 94, 60, 0.08);
+
+  /* ---- 链接色：深海蓝（收敛的任天堂蓝基因）---- */
+  --color-link: #0066CC;               /* 深海蓝：链接、辅助交互 */
+  --color-link-dark: #004D99;
+  --color-link-soft: rgba(0, 102, 204, 0.08);
+
+  /* ---- 金属点缀：香槟金（仅小面积高级点缀）---- */
+  --color-gold: #C9A961;               /* 香槟金：稀有、奖励、CTA 高光 */
+  --color-gold-dark: #A88B47;
+  --color-gold-soft: rgba(201, 169, 97, 0.1);
+
+  /* ---- 任天堂品牌色（仅用于卡片色调变体，保留游戏基因）---- */
+  --nintendo-red: #E60012;             /* 任天堂红：卡片图标背景、强调点缀 */
+  --nintendo-red-light: #FF3C28;       /* Neon Red：高亮变体 */
+  --nintendo-red-soft: rgba(230, 0, 18, 0.1);
+  --nintendo-red-glow: rgba(230, 0, 18, 0.18);
+  --nintendo-blue: #00C3E3;            /* 任天堂霓虹蓝：卡片图标、链接辅助 */
+  --nintendo-blue-light: #5BD4ED;
+  --nintendo-blue-soft: rgba(0, 195, 227, 0.1);
+  --nintendo-blue-glow: rgba(0, 195, 227, 0.18);
+  --nintendo-yellow: #FFD23F;          /* 任天堂星星黄：奖励、成就 */
+  --nintendo-yellow-soft: rgba(255, 210, 63, 0.14);
+  --nintendo-yellow-glow: rgba(255, 210, 63, 0.22);
+  --nintendo-green: #5BC97D;           /* 1-Up 绿：完成、成功 */
+  --nintendo-pink: #FF9CB3;            /* 碧琪粉：温暖点缀 */
+  --nintendo-purple: #9B7EDE;          /* 琪琪紫：稀有、特殊 */
+  --nintendo-purple-soft: rgba(155, 126, 222, 0.12);
+  --nintendo-orange: #FF8C42;          /* 火焰橙：能量 */
+
+  /* ---- 语义色（降饱和，融入整体调性）---- */
+  --color-success: #5B8C5A;            /* 苔藓绿：成功（非荧光绿）*/
+  --color-warning: #C9A961;            /* 与金同源：警告 */
+  --color-danger: #B8000E;             /* 收敛的任天堂红：危险/错误 */
+  --color-info: #0066CC;               /* 与链接同源：信息 */
+
+  /* ---- 稀有度色（感悟卡片专用，保留任天堂基因但收敛）---- */
+  --rarity-common: #8E8E93;            /* Apple 系统灰 */
+  --rarity-rare: #0066CC;              /* 深海蓝 */
+  --rarity-epic: #7B5EA7;              /* 鸢尾紫（降饱和）*/
+  --rarity-legendary: #C9A961;         /* 香槟金 */
+
+  /* ============ 中性色（Apple HIG 系统，干净不黄）============ */
+  --color-bg: #F5F5F7;                 /* 页面背景：Apple 暖白灰 */
+  --color-bg-alt: #FFFFFF;             /* 次级背景：纯白（卡片底）*/
+  --color-bg-elevated: #FFFFFF;        /* 悬浮元素背景 */
+  --color-surface: #FFFFFF;            /* 卡片表面 */
+  --color-surface-glass: rgba(255, 255, 255, 0.72);
+  --color-surface-hover: #FAFAFA;
+  --color-surface-active: #F0F0F2;
+
+  /* ---- 文字层级（Apple HIG 标签色规范）---- */
+  --color-text: #1D1D1F;               /* 主文本：Apple 墨黑 */
+  --color-text-secondary: rgba(60, 60, 67, 0.6);   /* Apple 次级标签 */
+  --color-text-tertiary: rgba(60, 60, 67, 0.3);    /* Apple 三级标签 */
+  --color-text-quaternary: rgba(60, 60, 67, 0.18); /* Apple 四级标签 */
+  --color-text-muted: #8E8E93;         /* 系统灰：辅助说明 */
+  --color-text-inverse: #FFFFFF;
+
+  /* ---- 边框与分隔线（Apple HIG 规范）---- */
+  --color-border: #D2D2D7;             /* Apple 标准边框 */
+  --color-border-strong: #C6C6C8;
+  --color-border-subtle: rgba(60, 60, 67, 0.12);
+  --color-separator: rgba(60, 60, 67, 0.29);       /* Apple 分隔线 */
+  --color-separator-opaque: #C6C6C8;
+  --color-overlay: rgba(0, 0, 0, 0.4);
+
+  /* ============ 玻璃拟态材质变量（冷调中性，去除彩色折射）============ */
+  /* 亮色模式：纯净磨砂玻璃，无彩色光晕；强化通透感与边缘高光 */
+  --glass-bg: rgba(255, 255, 255, 0.68);
+  --glass-bg-strong: rgba(255, 255, 255, 0.85);
+  --glass-bg-subtle: rgba(255, 255, 255, 0.46);
+  --glass-border: rgba(255, 255, 255, 0.65);
+  --glass-border-inner: rgba(255, 255, 255, 0.45);
+  --glass-blur: 28px;
+  --glass-blur-strong: 44px;
+  --glass-saturate: 190%;
+  /* 顶部镜面高光：纯白微光，模拟玻璃边缘反光（增强高光带，更通透）*/
+  --glass-highlight: linear-gradient(180deg, rgba(255, 255, 255, 0.6) 0%, rgba(255, 255, 255, 0) 40%);
+  /* 玻璃阴影：柔和但有深度（增加内阴影模拟玻璃厚度）*/
+  --glass-shadow: 0 4px 24px rgba(0, 0, 0, 0.05), 0 1px 4px rgba(0, 0, 0, 0.03), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  --glass-shadow-strong: 0 16px 48px rgba(0, 0, 0, 0.1), 0 4px 12px rgba(0, 0, 0, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+
+  /* ============ 背景光晕（极克制，单一暖白渐变，不再彩色）============ */
+  /* 仅保留一层柔和的暖光，为玻璃提供微弱折射素材 */
+  --glow-warm: rgba(139, 94, 60, 0.06);   /* 焦糖铜微光（提升一档为玻璃提供折射素材）*/
+  --glow-cool: rgba(0, 102, 204, 0.045);  /* 深海蓝微光（提升一档）*/
+  --bg-mid-glow: rgba(201, 169, 97, 0.035); /* 香槟金中性基底光，增加中心层次 */
+
+  /* ============ 字体 ============ */
+  --font-sans: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text',
+               'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei',
+               'Segoe UI', Roboto, system-ui, sans-serif;
+  --font-rounded: -apple-system, BlinkMacSystemFont, 'SF Pro Rounded',
+                  'PingFang SC', 'Hiragino Sans GB', system-ui, sans-serif;
+  --font-mono: 'SF Mono', SFMono-Regular, 'JetBrains Mono', Menlo, Monaco, Consolas, monospace;
+  --font-serif: 'New York', 'Iowan Old Style', 'PingFang SC', Georgia, serif;
+
+  /* 字号阶梯（Apple Dynamic Type 参考）*/
+  --fs-xs: 0.75rem;     /* 12px - caption */
+  --fs-sm: 0.8125rem;   /* 13px - footnote */
+  --fs-base: 0.9375rem; /* 15px - subhead */
+  --fs-md: 1.0625rem;   /* 17px - body */
+  --fs-lg: 1.25rem;     /* 20px - title3 */
+  --fs-xl: 1.375rem;    /* 22px - title2 */
+  --fs-2xl: 1.75rem;    /* 28px - title1 */
+  --fs-3xl: 2.125rem;   /* 34px - large title */
+
+  --fw-light: 300;
+  --fw-normal: 400;
+  --fw-medium: 500;
+  --fw-semibold: 600;
+  --fw-bold: 700;
+  --fw-black: 900;
+
+  --lh-tight: 1.2;
+  --lh-base: 1.5;
+  --lh-loose: 1.75;
+
+  /* ============ 间距（Apple 8pt 网格）============ */
+  --space-1: 0.25rem;   /* 4px */
+  --space-2: 0.5rem;    /* 8px */
+  --space-3: 0.75rem;   /* 12px */
+  --space-4: 1rem;      /* 16px - 标准边距 */
+  --space-5: 1.5rem;    /* 24px */
+  --space-6: 2rem;      /* 32px */
+  --space-7: 3rem;      /* 48px */
+  --space-8: 4rem;      /* 64px */
+  --space-9: 6rem;      /* 96px */
+
+  /* ============ 圆角（Apple 风格，收敛任天堂过度圆润）============ */
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 12px;    /* Apple 卡片标准 */
+  --radius-lg: 16px;
+  --radius-xl: 22px;
+  --radius-2xl: 28px;
+  --radius-full: 9999px;
+
+  /* ============ 阴影（Apple 风格，克制柔和）============ */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.03);
+  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04);
+  --shadow-xl: 0 16px 40px rgba(0, 0, 0, 0.12), 0 4px 12px rgba(0, 0, 0, 0.06);
+  --shadow-inner: inset 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-glow: 0 0 0 3px rgba(0, 102, 204, 0.2);          /* 焦点环 */
+  --shadow-glow-accent: 0 0 0 3px rgba(139, 94, 60, 0.22);  /* 暖色焦点环 */
+
+  /* ============ 动效（收敛：去除过度弹性，保留丝滑）============ */
+  --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);       /* Apple 标准曲线 */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);         /* Apple 减速曲线 */
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-spring: cubic-bezier(0.34, 1.3, 0.64, 1);   /* 微弹簧（收敛版）*/
+  --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);  /* 仅特殊场景 */
+
+  --duration-fast: 0.15s;
+  --duration-base: 0.25s;
+  --duration-slow: 0.4s;
+  --duration-slower: 0.6s;
+
+  /* ============ 布局尺寸 ============ */
+  --dock-height: 64px;
+  --dock-item-size: 44px;              /* Apple HIG 最小触摸目标 */
+  --dock-item-size-hover: 56px;
+  --content-max-width: 1200px;
+  --content-narrow: 720px;
+  --header-height: 56px;
+  --viewport-min: 320px;
+
+  /* ============ Z-index 层级 ============ */
+  --z-base: 1;
+  --z-content: 10;
+  --z-dock: 100;
+  --z-header: 200;
+  --z-overlay: 900;
+  --z-modal: 1000;
+  --z-toast: 1100;
+
+  /* ============ 过渡默认值 ============ */
+  --transition-base: var(--duration-base) var(--ease-smooth);
+  --transition-out: var(--duration-base) var(--ease-out);
+  --transition-spring: var(--duration-slow) var(--ease-spring);
+}
+
+/* ============ 暗色主题（Apple HIG 标准暗色）============ */
+[data-theme="dark"] {
+  /* 主色反转：亮色文字作为主操作色 */
+  --color-primary: #FFFFFF;
+  --color-primary-dark: #E5E5EA;
+  --color-primary-light: #FFFFFF;
+  --color-primary-soft: rgba(255, 255, 255, 0.08);
+  --color-primary-softer: rgba(255, 255, 255, 0.04);
+
+  /* 焦糖铜在暗色下提亮 */
+  --color-accent: #C9A06A;
+  --color-accent-dark: #A87A52;
+  --color-accent-light: #E0B888;
+  --color-accent-soft: rgba(201, 160, 106, 0.12);
+
+  /* 链接色提亮（Apple 暗色系统蓝）*/
+  --color-link: #0A84FF;
+  --color-link-dark: #409CFF;
+  --color-link-soft: rgba(10, 132, 255, 0.12);
+
+  /* 香槟金提亮 */
+  --color-gold: #D4B574;
+  --color-gold-dark: #C9A961;
+  --color-gold-soft: rgba(212, 181, 116, 0.14);
+
+  /* 任天堂品牌色在暗色下提亮 */
+  --nintendo-red: #FF3C28;             /* Neon Red：暗色下更亮 */
+  --nintendo-red-light: #FF6B5A;
+  --nintendo-red-soft: rgba(255, 60, 40, 0.14);
+  --nintendo-red-glow: rgba(255, 60, 40, 0.28);
+  --nintendo-blue: #5BD4ED;
+  --nintendo-blue-light: #8FE0F5;
+  --nintendo-blue-soft: rgba(0, 195, 227, 0.14);
+  --nintendo-blue-glow: rgba(0, 195, 227, 0.28);
+  --nintendo-yellow: #FFD95A;
+  --nintendo-yellow-soft: rgba(255, 217, 90, 0.16);
+  --nintendo-yellow-glow: rgba(255, 217, 90, 0.3);
+  --nintendo-green: #6FD88E;
+  --nintendo-pink: #FFA8C2;
+  --nintendo-purple: #AC8FE6;
+  --nintendo-purple-soft: rgba(172, 143, 230, 0.16);
+  --nintendo-orange: #FF9C5B;
+
+  /* 语义色提亮（Apple 暗色系统色）*/
+  --color-success: #30D158;
+  --color-warning: #FFD60A;
+  --color-danger: #FF453A;
+  --color-info: #0A84FF;
+
+  /* 稀有度色提亮 */
+  --rarity-common: #8E8E93;
+  --rarity-rare: #0A84FF;
+  --rarity-epic: #BF5AF2;
+  --rarity-legendary: #FFD60A;
+
+  /* Apple HIG 标准暗色背景（非纯黑，保留层次）*/
+  --color-bg: #000000;                 /* Apple 暗色主背景：纯黑（OLED 友好）*/
+  --color-bg-alt: #1C1C1E;             /* Apple 次级背景 */
+  --color-bg-elevated: #2C2C2E;        /* 悬浮元素 */
+  --color-surface: #1C1C1E;
+  --color-surface-glass: rgba(28, 28, 30, 0.72);
+  --color-surface-hover: #2C2C2E;
+  --color-surface-active: #3A3A3C;
+
+  /* 文字层级（Apple HIG 暗色标签）*/
+  --color-text: #FFFFFF;
+  --color-text-secondary: rgba(235, 235, 245, 0.6);
+  --color-text-tertiary: rgba(235, 235, 245, 0.3);
+  --color-text-quaternary: rgba(235, 235, 245, 0.18);
+  --color-text-muted: #8E8E93;
+
+  /* 边框（Apple HIG 暗色）*/
+  --color-border: rgba(84, 84, 88, 0.65);
+  --color-border-strong: rgba(84, 84, 88, 0.9);
+  --color-border-subtle: rgba(84, 84, 88, 0.36);
+  --color-separator: rgba(84, 84, 88, 0.6);
+  --color-separator-opaque: #38383A;
+  --color-overlay: rgba(0, 0, 0, 0.6);
+
+  /* 暗色玻璃：更明显的通透感 + 镜面高光（强化边缘光，提升高级感）*/
+  --glass-bg: rgba(28, 28, 30, 0.68);
+  --glass-bg-strong: rgba(44, 44, 46, 0.85);
+  --glass-bg-subtle: rgba(28, 28, 30, 0.46);
+  --glass-border: rgba(84, 84, 88, 0.45);
+  --glass-border-inner: rgba(255, 255, 255, 0.1);
+  --glass-blur: 36px;
+  --glass-blur-strong: 52px;
+  --glass-saturate: 190%;
+  --glass-highlight: linear-gradient(180deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0) 45%);
+  --glass-shadow: 0 4px 24px rgba(0, 0, 0, 0.45), 0 1px 4px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  --glass-shadow-strong: 0 16px 48px rgba(0, 0, 0, 0.55), 0 4px 12px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+
+  /* 暗色光晕：更明显但仍克制（暖光在黑底上更显贵气）*/
+  --glow-warm: rgba(201, 160, 106, 0.1);
+  --glow-cool: rgba(10, 132, 255, 0.07);
+  --bg-mid-glow: rgba(201, 160, 106, 0.05);
+
+  /* 暗色阴影加深 */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.45);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.5);
+  --shadow-xl: 0 16px 40px rgba(0, 0, 0, 0.6);
+  --shadow-glow: 0 0 0 3px rgba(10, 132, 255, 0.4);
+  --shadow-glow-accent: 0 0 0 3px rgba(201, 160, 106, 0.4);
+}
+
+/* ============ 兼容映射层（过渡用，让旧变量名指向新克制色值）============
+   目的：避免大改各模块 CSS/JS 引用，同时让整体视觉自动从高饱和收敛
+   旧名 → 新语义：
+   --color-secondary(任天堂蓝) → --color-link(深海蓝)
+   --color-accent-yellow(任天堂黄) → --color-gold(香槟金)
+   --color-accent-green(任天堂绿) → --color-success(苔藓绿)
+   --color-accent-orange(任天堂橙) → --color-accent(焦糖铜)
+   --color-accent-purple(任天堂紫) → --rarity-epic(鸢尾紫)
+   --color-accent-pink(碧琪粉) → --color-accent-light(浅焦糖铜)
+   --glow-red/blue/yellow/pink → 统一为 --glow-warm/--glow-cool
+*/
+:root {
+  --color-secondary: var(--color-link);
+  --color-secondary-dark: var(--color-link-dark);
+  --color-secondary-light: var(--color-link);
+  --color-accent-yellow: var(--color-gold);
+  --color-accent-green: var(--color-success);
+  --color-accent-orange: var(--color-accent);
+  --color-accent-purple: var(--rarity-epic);
+  --color-accent-pink: var(--color-accent-light);
+  --glow-red: var(--glow-warm);
+  --glow-blue: var(--glow-cool);
+  --glow-yellow: var(--glow-warm);
+  --glow-pink: var(--glow-warm);
+}
+
+[data-theme="dark"] {
+  --color-secondary: var(--color-link);
+  --color-secondary-dark: var(--color-link-dark);
+  --color-secondary-light: var(--color-link);
+  --color-accent-yellow: var(--color-gold);
+  --color-accent-green: var(--color-success);
+  --color-accent-orange: var(--color-accent);
+  --color-accent-purple: var(--rarity-epic);
+  --color-accent-pink: var(--color-accent-light);
+  --glow-red: var(--glow-warm);
+  --glow-blue: var(--glow-cool);
+  --glow-yellow: var(--glow-warm);
+  --glow-pink: var(--glow-warm);
+}

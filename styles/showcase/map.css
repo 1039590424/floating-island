@@ -1,0 +1,863 @@
+/* map.css
+   3D 世界地图交互布局
+   设计灵感：任天堂世界地图 + 动森岛屿 + 马力欧关卡选择
+   核心：Three.js 真 3D 浮空岛 + OrbitControls 拖拽旋转 + 点击岛屿展开内容
+*/
+
+/* ============ 地图视口（用户可见区域）============ */
+.map-viewport {
+  position: relative;
+  width: 100%;
+  flex: 1 1 auto;
+  min-height: 0;          /* flex 子项允许收缩 */
+  overflow: hidden;
+  /* 多层天空渐变：晨曦天空 + 云团光晕 + 底部地平线暖光 */
+  background:
+    /* 顶部天蓝色渐隐 */
+    linear-gradient(180deg,
+      rgba(176, 224, 230, 0.55) 0%,
+      rgba(200, 230, 235, 0.25) 25%,
+      transparent 55%),
+    /* 底部地平线暖橙微光 */
+    linear-gradient(0deg,
+      rgba(255, 218, 185, 0.40) 0%,
+      rgba(255, 228, 196, 0.15) 20%,
+      transparent 45%),
+    /* 左上暖光团（日光感）*/
+    radial-gradient(ellipse 60% 50% at 18% 12%,
+      rgba(255, 235, 200, 0.55) 0%,
+      rgba(255, 220, 170, 0.20) 35%,
+      transparent 70%),
+    /* 右下冷光团（远景天光）*/
+    radial-gradient(ellipse 50% 45% at 82% 88%,
+      rgba(180, 215, 240, 0.40) 0%,
+      rgba(160, 200, 235, 0.15) 40%,
+      transparent 75%),
+    /* 中部柔光带 */
+    radial-gradient(ellipse 80% 30% at 50% 60%,
+      rgba(255, 250, 240, 0.30) 0%,
+      transparent 60%),
+    /* 基础底色 */
+    var(--color-bg);
+  touch-action: none;
+}
+
+/* ============ CSS 云朵装饰层（纯渐变模拟蓬松云团）============ */
+.map-viewport::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    /* 高空卷云 1（右上）*/
+    radial-gradient(ellipse 240px 60px at 75% 18%,
+      rgba(255, 255, 255, 0.55) 0%,
+      rgba(255, 255, 255, 0.20) 50%,
+      transparent 80%),
+    /* 高空卷云 2（左中）*/
+    radial-gradient(ellipse 320px 50px at 22% 35%,
+      rgba(255, 255, 255, 0.40) 0%,
+      rgba(255, 255, 255, 0.12) 55%,
+      transparent 85%),
+    /* 低空云团 1（右中下）*/
+    radial-gradient(ellipse 280px 80px at 68% 72%,
+      rgba(255, 250, 245, 0.45) 0%,
+      rgba(255, 245, 238, 0.15) 50%,
+      transparent 80%),
+    /* 低空云团 2（左下）*/
+    radial-gradient(ellipse 200px 55px at 15% 82%,
+      rgba(255, 248, 240, 0.35) 0%,
+      transparent 75%);
+  filter: blur(2px);
+  opacity: 0.9;
+  animation: cloudDrift 60s linear infinite;
+}
+
+/* 云朵缓慢右移循环 */
+@keyframes cloudDrift {
+  0%   { transform: translateX(0); }
+  50%  { transform: translateX(-30px); }
+  100% { transform: translateX(0); }
+}
+
+/* ============ 暗色模式：夜空 + 星点 ============ */
+[data-theme="dark"] .map-viewport {
+  background:
+    /* 顶部深蓝夜空 */
+    linear-gradient(180deg,
+      rgba(10, 20, 50, 0.85) 0%,
+      rgba(20, 30, 65, 0.50) 30%,
+      transparent 60%),
+    /* 底部深紫地平线 */
+    linear-gradient(0deg,
+      rgba(40, 25, 60, 0.60) 0%,
+      transparent 40%),
+    /* 月光柔团（右上）*/
+    radial-gradient(ellipse 40% 35% at 80% 15%,
+      rgba(200, 215, 240, 0.25) 0%,
+      transparent 65%),
+    /* 基础深色底 */
+    var(--color-bg);
+}
+[data-theme="dark"] .map-viewport::before {
+  /* 夜间云团改为稀疏星云 */
+  background:
+    radial-gradient(ellipse 200px 50px at 70% 20%,
+      rgba(150, 170, 220, 0.15) 0%,
+      transparent 70%),
+    radial-gradient(ellipse 260px 45px at 25% 40%,
+      rgba(130, 150, 200, 0.12) 0%,
+      transparent 75%);
+  filter: blur(3px);
+  opacity: 0.7;
+}
+/* 星点层：用小 radial-gradient 模拟星星 */
+[data-theme="dark"] .map-viewport::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image:
+    radial-gradient(circle 1px at 12% 8%,  #fff 100%, transparent),
+    radial-gradient(circle 1px at 28% 15%, #fff 100%, transparent),
+    radial-gradient(circle 1px at 45% 6%,  #dfe9ff 100%, transparent),
+    radial-gradient(circle 1px at 62% 12%, #fff 100%, transparent),
+    radial-gradient(circle 1px at 78% 22%, #dfe9ff 100%, transparent),
+    radial-gradient(circle 1px at 88% 9%,  #fff 100%, transparent),
+    radial-gradient(circle 1px at 8% 28%,  #dfe9ff 100%, transparent),
+    radial-gradient(circle 1px at 35% 32%, #fff 100%, transparent),
+    radial-gradient(circle 1px at 55% 26%, #fff 100%, transparent),
+    radial-gradient(circle 1px at 72% 35%, #dfe9ff 100%, transparent),
+    radial-gradient(circle 1px at 92% 30%, #fff 100%, transparent),
+    radial-gradient(circle 1px at 18% 45%, #fff 100%, transparent),
+    radial-gradient(circle 1px at 48% 42%, #dfe9ff 100%, transparent);
+  opacity: 0.85;
+  animation: twinkle 4s ease-in-out infinite;
+}
+@keyframes twinkle {
+  0%, 100% { opacity: 0.85; }
+  50%      { opacity: 0.45; }
+}
+
+/* 确保 3D canvas 在装饰层之上 */
+.map-3d-container { z-index: 1; }
+.map-controls,
+.map-hint,
+.island-page,
+.island-page__back { z-index: 10; }
+
+/* ============ 3D 容器 ============ */
+.map-3d-container {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.map-3d-container canvas {
+  display: block;
+  cursor: grab;
+}
+.map-3d-container canvas:active {
+  cursor: grabbing;
+}
+
+/* ============ 地图画布（大尺寸，可平移缩放）============ */
+.map-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4000px;
+  height: 2800px;
+  transform-origin: 0 0;
+  transition: transform var(--duration-slow) var(--ease-smooth);
+  will-change: transform;
+}
+.map-viewport.is-dragging .map-canvas { transition: none; } /* 拖拽时去掉过渡 */
+.map-viewport.is-zooming .map-canvas { transition: none; }
+
+/* 画布背景：海洋纹理 + 网格点（地图感）*/
+.map-canvas::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(circle, var(--color-border-subtle) 1px, transparent 1px);
+  background-size: 60px 60px;
+  background-position: 0 0;
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* 海浪装饰：隐约的曲线波纹 */
+.map-canvas::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(ellipse 800px 400px at 20% 30%, var(--glow-warm) 0%, transparent 70%),
+    radial-gradient(ellipse 600px 300px at 80% 70%, var(--glow-cool) 0%, transparent 70%),
+    radial-gradient(ellipse 500px 250px at 50% 50%, var(--nintendo-red-soft) 0%, transparent 70%);
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+/* ============ 路径连接层（SVG）============ */
+.map__paths {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+.map__path {
+  fill: none;
+  stroke: var(--color-border-strong);
+  stroke-width: 3;
+  stroke-dasharray: 10, 8;
+  opacity: 0.5;
+  stroke-linecap: round;
+  animation: pathFlow 2s linear infinite;
+}
+@keyframes pathFlow {
+  to { stroke-dashoffset: -36; }
+}
+
+/* ============ 岛屿浮动动画 ============ */
+@keyframes islandFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+/* ============ 岛屿基础 ============ */
+.island-node {
+  position: absolute;
+  z-index: 2;
+  cursor: pointer;
+  /* 整体浮动动画 */
+  animation: islandFloat 6s ease-in-out infinite;
+  transition: transform var(--duration-base) var(--ease-spring);
+}
+
+/* 不同岛屿错峰浮动 */
+.island-node--portal { animation-delay: -1.2s; animation-duration: 7s; }
+.island-node--skills { animation-delay: -2.4s; animation-duration: 5.5s; }
+.island-node--projects { animation-delay: -3.6s; animation-duration: 6.5s; }
+.island-node--cards { animation-delay: -4.8s; animation-duration: 7.5s; }
+.island-node--hero { animation-delay: 0s; animation-duration: 6s; }
+
+/* hover/active 时暂停浮动，避免冲突 */
+.island-node:hover,
+.island-node.is-active {
+  animation-play-state: paused;
+}
+
+/* 岛屿本体：有机形状容器 */
+.island-shape {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+/* 岛屿 SVG：多层立体结构 */
+.island-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+/* 海底层：深蓝色水下阴影 */
+.island-svg__seabed {
+  fill: rgba(60, 100, 140, 0.35);
+  filter: blur(4px);
+  transform: translateY(6px);
+}
+[data-theme="dark"] .island-svg__seabed {
+  fill: rgba(20, 40, 70, 0.5);
+}
+
+/* 沙滩层：金色渐变 */
+.island-svg__beach {
+  stroke: rgba(232, 192, 120, 0.6);
+  stroke-width: 1;
+}
+
+/* 草地层：绿色渐变（主体）*/
+.island-svg__grass {
+  stroke: rgba(74, 157, 92, 0.4);
+  stroke-width: 1.5;
+  transition: filter var(--duration-base);
+}
+
+/* 高地层：深绿色山顶 */
+.island-svg__highland {
+  fill: #3A6B42;
+  opacity: 0.6;
+}
+[data-theme="dark"] .island-svg__highland {
+  fill: #2A4D32;
+}
+
+/* 顶部高光层 */
+.island-svg__highlight {
+  pointer-events: none;
+}
+
+/* ============ 岛屿悬停态：整体升起 ============ */
+.island-node:hover {
+  transform: translateY(-8px) scale(1.02);
+  z-index: 5;
+}
+.island-node:hover .island-svg__grass {
+  filter: drop-shadow(0 20px 40px rgba(0, 0, 0, 0.2)) brightness(1.08);
+}
+
+/* ============ 岛屿激活态 ============ */
+.island-node.is-active {
+  transform: translateY(-12px) scale(1.04);
+  z-index: 6;
+}
+.island-node.is-active .island-svg__grass {
+  filter: drop-shadow(0 24px 48px var(--nintendo-red-glow)) brightness(1.12);
+}
+.island-node.is-active .island-svg__seabed {
+  fill: rgba(230, 0, 18, 0.2);
+}
+
+/* ============ 装饰物动画 ============ */
+.island-decor {
+  transition: transform var(--duration-base) var(--ease-spring);
+  transform-origin: center bottom;
+}
+.island-node:hover .island-decor {
+  transform: translateY(-2px);
+}
+
+/* 水晶脉冲 */
+.island-decor--crystal {
+  animation: crystalPulse 3s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+@keyframes crystalPulse {
+  0%, 100% { opacity: 0.9; }
+  50% { opacity: 1; filter: drop-shadow(0 0 16px var(--nintendo-purple)); }
+}
+
+/* 传送门光芒旋转 */
+.island-decor--portal ellipse {
+  animation: portalSpin 4s linear infinite;
+  transform-origin: center;
+  transform-box: fill-box;
+}
+@keyframes portalSpin {
+  from { opacity: 0.6; }
+  50% { opacity: 0.9; }
+  to { opacity: 0.6; }
+}
+
+/* ============ 岛屿内容（入口态）============ */
+.island-content {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-5);
+  text-align: center;
+  pointer-events: none; /* 让 SVG 处理点击 */
+  z-index: 2;
+}
+
+.island__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  font-size: var(--fs-2xl);
+  background: linear-gradient(135deg, var(--nintendo-red) 0%, var(--nintendo-red-light) 100%);
+  color: var(--color-text-inverse);
+  border: 3px solid var(--color-text-inverse);
+  border-radius: var(--radius-full);
+  box-shadow: 0 8px 24px var(--nintendo-red-glow), inset 0 -4px 0 rgba(0, 0, 0, 0.15);
+  text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.2);
+  animation: bounceY 2.4s ease-in-out infinite;
+}
+
+/* 不同岛屿的图标色调 */
+.island-node--portal .island__icon {
+  background: linear-gradient(135deg, var(--nintendo-blue) 0%, var(--nintendo-blue-light) 100%);
+  box-shadow: 0 8px 24px var(--nintendo-blue-glow), inset 0 -4px 0 rgba(0, 0, 0, 0.15);
+}
+.island-node--skills .island__icon {
+  background: linear-gradient(135deg, var(--nintendo-yellow) 0%, var(--color-gold) 100%);
+  box-shadow: 0 8px 24px var(--nintendo-yellow-glow), inset 0 -4px 0 rgba(0, 0, 0, 0.15);
+  color: var(--color-text);
+  text-shadow: none;
+}
+.island-node--projects .island__icon {
+  background: linear-gradient(135deg, var(--nintendo-purple) 0%, var(--nintendo-pink) 100%);
+  box-shadow: 0 8px 24px var(--nintendo-purple-soft), inset 0 -4px 0 rgba(0, 0, 0, 0.15);
+}
+.island-node--cards .island__icon {
+  background: linear-gradient(135deg, var(--nintendo-green) 0%, var(--nintendo-blue-light) 100%);
+  box-shadow: 0 8px 24px rgba(91, 201, 125, 0.4), inset 0 -4px 0 rgba(0, 0, 0, 0.15);
+}
+
+.island__name {
+  font-family: var(--font-rounded);
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-black);
+  color: var(--color-text);
+  text-shadow: 0 2px 4px rgba(255, 255, 255, 0.8);
+  letter-spacing: -0.01em;
+}
+[data-theme="dark"] .island__name {
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
+}
+
+.island__label {
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  color: var(--color-text-secondary);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* 岛屿编号徽章 */
+.island__badge {
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 3;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 40px;
+  height: 28px;
+  padding: 0 var(--space-3);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-bold);
+  color: var(--color-text-inverse);
+  background: linear-gradient(135deg, var(--nintendo-red) 0%, var(--nintendo-red-light) 100%);
+  border: 2px solid var(--color-text-inverse);
+  border-radius: var(--radius-full);
+  box-shadow: 0 4px 12px var(--nintendo-red-glow);
+}
+
+/* ============ 主岛（玩家档案，最大）============ */
+.island-node--hero {
+  z-index: 3;
+}
+.island-node--hero .island__icon {
+  width: 80px;
+  height: 80px;
+  font-size: var(--fs-3xl);
+}
+.island-node--hero .island__name {
+  font-size: var(--fs-2xl);
+}
+
+/* ============ 人物角色 ============ */
+.player {
+  position: absolute;
+  z-index: 10;
+  width: 36px;
+  height: 36px;
+  pointer-events: none;
+  /* 用 transform 控制位置，transition 实现移动动画 */
+  transition: transform 1.2s var(--ease-smooth);
+  will-change: transform;
+}
+
+.player__body {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+/* 角色身体：圆形小人 */
+.player__avatar {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--fs-lg);
+  background: linear-gradient(135deg, var(--nintendo-red) 0%, var(--nintendo-red-light) 100%);
+  color: var(--color-text-inverse);
+  border: 3px solid var(--color-text-inverse);
+  border-radius: var(--radius-full);
+  box-shadow: 0 4px 12px var(--nintendo-red-glow), inset 0 -3px 0 rgba(0, 0, 0, 0.2);
+  text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.3);
+}
+
+/* 角色阴影 */
+.player__shadow {
+  position: absolute;
+  bottom: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 24px;
+  height: 6px;
+  background: radial-gradient(ellipse, rgba(0, 0, 0, 0.3) 0%, transparent 70%);
+  filter: blur(2px);
+}
+
+/* 跑步动画：身体上下颠簸 */
+.player.is-moving .player__body {
+  animation: playerRun 0.4s var(--ease-smooth) infinite;
+}
+@keyframes playerRun {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+/* 跳跃动画：到达岛屿时 */
+.player.is-jumping .player__body {
+  animation: playerJump 0.6s var(--ease-bounce);
+}
+@keyframes playerJump {
+  0% { transform: translateY(0) scale(1); }
+  40% { transform: translateY(-20px) scale(1.1, 0.9); }
+  70% { transform: translateY(-10px) scale(0.95, 1.05); }
+  100% { transform: translateY(0) scale(1); }
+}
+
+/* 朝向翻转 */
+.player.is-facing-left .player__avatar { transform: scaleX(-1); }
+
+/* ============ 岛屿全屏页面（人物跳岛落地后展开）============ */
+.island-page {
+  position: absolute;
+  z-index: 30;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  /* 多层渐变背景，避免纯色空旷感 */
+  background:
+    radial-gradient(ellipse 60% 40% at 50% 0%,
+      rgba(255, 235, 200, 0.25) 0%,
+      transparent 60%),
+    radial-gradient(ellipse 50% 50% at 100% 100%,
+      rgba(180, 215, 240, 0.20) 0%,
+      transparent 65%),
+    var(--color-bg);
+  backdrop-filter: blur(var(--glass-blur-strong)) saturate(var(--glass-saturate));
+  -webkit-backdrop-filter: blur(var(--glass-blur-strong)) saturate(var(--glass-saturate));
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(20px) scale(0.98);
+  transition: opacity var(--duration-slow) var(--ease-out),
+              transform var(--duration-slow) var(--ease-out);
+  overflow: hidden;
+}
+/* 暗色模式全屏页面背景 */
+[data-theme="dark"] .island-page {
+  background:
+    radial-gradient(ellipse 60% 40% at 50% 0%,
+      rgba(40, 50, 90, 0.30) 0%,
+      transparent 60%),
+    radial-gradient(ellipse 50% 50% at 100% 100%,
+      rgba(30, 25, 60, 0.25) 0%,
+      transparent 65%),
+    var(--color-bg);
+}
+.island-page.is-open {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0) scale(1);
+}
+
+.island-page__inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  /* 更宽的内容区，避免大屏左右大片空白 */
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: calc(var(--space-8) + var(--space-2)) var(--space-6) calc(var(--dock-height) + var(--space-6));
+  overflow-y: auto;
+}
+.island-page__inner::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--glass-highlight);
+  pointer-events: none;
+  z-index: 0;
+}
+.island-page__inner > * { position: relative; z-index: 1; }
+
+/* 全屏页面内的模块标题：更醒目，作为页面视觉锚点 */
+.island-page .island__title {
+  font-family: var(--font-rounded);
+  font-size: var(--fs-3xl);
+  font-weight: var(--fw-black);
+  color: var(--color-text);
+  margin-bottom: var(--space-6);
+  padding-bottom: var(--space-3);
+  border-bottom: 2px solid var(--glass-border);
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+}
+.island-page .island__title-accent {
+  font-family: var(--font-mono);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-normal);
+  color: var(--color-text-secondary);
+  letter-spacing: 0.15em;
+}
+
+/* 返回按钮：左上角醒目胶囊形（独立于 island-page，避免 transform 影响 fixed 定位）*/
+.island-page__back {
+  position: absolute;
+  top: var(--space-4);
+  left: var(--space-5);
+  z-index: 40;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  font-family: var(--font-rounded);
+  font-size: var(--fs-base);
+  font-weight: var(--fw-semibold);
+  color: var(--color-text);
+  background: var(--glass-bg-strong);
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-full);
+  box-shadow: var(--shadow-md);
+  cursor: pointer;
+  opacity: 0;
+  transform: translateX(-12px);
+  pointer-events: none;
+  transition: opacity var(--duration-base) var(--ease-out),
+              transform var(--duration-base) var(--ease-spring);
+}
+/* 全屏页面打开时显示返回按钮 */
+.island-page.is-open ~ .island-page__back,
+.island-page__back.is-visible {
+  opacity: 1;
+  transform: translateX(0);
+  pointer-events: auto;
+}
+.island-page__back:hover {
+  background: var(--nintendo-red);
+  color: var(--color-text-inverse);
+  border-color: transparent;
+  transform: translateX(-3px);
+  box-shadow: 0 4px 16px var(--nintendo-red-glow);
+}
+.island-page__back:active { transform: translateX(-1px) scale(0.97); }
+.island-page__back-icon {
+  font-size: var(--fs-md);
+  transition: transform var(--duration-fast) var(--ease-spring);
+}
+.island-page__back:hover .island-page__back-icon {
+  transform: translateX(-2px);
+}
+
+/* 暗色模式：全屏页面背景加深 */
+[data-theme="dark"] .island-page {
+  background: rgba(0, 0, 0, 0.85);
+}
+
+/* ============ 地图控制栏 ============ */
+.map-controls {
+  position: absolute;
+  bottom: calc(var(--dock-height) + var(--space-5));
+  right: var(--space-5);
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.map-control__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-bold);
+  background: var(--glass-bg-strong);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  color: var(--color-text);
+  cursor: pointer;
+  box-shadow: var(--shadow-md);
+  transition: all var(--duration-fast) var(--ease-spring);
+}
+.map-control__btn:hover {
+  background: var(--color-text-inverse);
+  color: var(--nintendo-red);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+.map-control__btn:active {
+  transform: translateY(0);
+}
+
+/* ============ 地图提示 ============ */
+.map-hint {
+  position: absolute;
+  top: calc(var(--header-height) + var(--space-4));
+  right: var(--space-5);
+  z-index: 50;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-4);
+  background: var(--glass-bg-strong);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-full);
+  box-shadow: var(--shadow-md);
+  font-size: var(--fs-sm);
+  color: var(--color-text-secondary);
+  pointer-events: none;
+  animation: hintFloat 3s ease-in-out infinite;
+}
+@keyframes hintFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+.map-hint__icon { color: var(--nintendo-red); }
+.map-hint__divider {
+  width: 1px;
+  height: 14px;
+  background: var(--color-border);
+}
+/* 小屏隐藏分隔线与部分文字，避免拥挤 */
+@media (max-width: 640px) {
+  .map-hint {
+    top: calc(var(--header-height) + var(--space-2));
+    right: var(--space-3);
+    padding: var(--space-1) var(--space-2);
+    font-size: var(--fs-xs);
+    gap: var(--space-2);
+  }
+  .map-hint__divider:nth-of-type(2) { display: none; }
+}
+
+/* ============ 小地图（缩略图导航）============ */
+.minimap {
+  position: absolute;
+  top: calc(var(--header-height) + var(--space-4));
+  right: var(--space-5);
+  z-index: 40;
+  width: 180px;
+  height: 120px;
+  background: var(--glass-bg-strong);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  overflow: hidden;
+  cursor: pointer;
+}
+.minimap__canvas {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background: var(--color-bg-alt);
+}
+.minimap__island {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background: var(--nintendo-red);
+  border-radius: var(--radius-full);
+  transform: translate(-50%, -50%);
+  opacity: 0.6;
+  transition: opacity var(--duration-fast);
+}
+.minimap__island.is-active { opacity: 1; box-shadow: 0 0 8px var(--nintendo-red); }
+.minimap__viewport {
+  position: absolute;
+  border: 2px solid var(--nintendo-red);
+  background: var(--nintendo-red-soft);
+  border-radius: var(--radius-xs);
+  pointer-events: none;
+}
+
+/* ============ 装饰元素 ============ */
+/* 漂浮的云朵 */
+.cloud {
+  position: absolute;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0.7;
+  animation: cloudDrift 60s linear infinite;
+}
+.cloud--1 { top: 200px; left: 800px; animation-duration: 80s; }
+.cloud--2 { top: 600px; left: 2400px; animation-duration: 100s; animation-delay: -30s; }
+.cloud--3 { top: 1800px; left: 1500px; animation-duration: 90s; animation-delay: -50s; }
+
+@keyframes cloudDrift {
+  from { transform: translateX(0); }
+  to { transform: translateX(800px); }
+}
+
+/* ============ 动画工具 ============ */
+@keyframes bounceY {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+/* ============ 响应式 ============ */
+@media (max-width: 768px) {
+  .map-viewport {
+    height: 100%;
+    flex: 1 1 auto;
+  }
+  .minimap { display: none; }
+  .map-controls {
+    bottom: calc(var(--dock-height) + var(--space-3));
+    right: var(--space-3);
+  }
+  .map-control__btn {
+    width: 40px;
+    height: 40px;
+    font-size: var(--fs-md);
+  }
+  .map-hint {
+    font-size: var(--fs-xs);
+    padding: var(--space-1) var(--space-3);
+  }
+  /* 移动端：全屏页面返回按钮更紧凑 */
+  .island-page__back {
+    top: calc(var(--header-height) + var(--space-2));
+    left: var(--space-3);
+    padding: var(--space-1) var(--space-3);
+    font-size: var(--fs-sm);
+  }
+  .island-page__inner {
+    padding: calc(var(--space-7) + var(--space-2)) var(--space-3) calc(var(--dock-height) + var(--space-4));
+  }
+}
+
+/* 减少动效偏好 */
+@media (prefers-reduced-motion: reduce) {
+  .map-canvas { transition: none; }
+  .player { transition: transform 0.3s linear; }
+  .cloud { animation: none; }
+  .map__path { animation: none; }
+  .island__icon { animation: none; }
+}

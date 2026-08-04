@@ -1,0 +1,261 @@
+/* portal.css
+   关卡选择式错落布局
+   设计灵感：马力欧关卡选择屏 + 动森岛屿选择
+   核心：非对称错落、3D 倾斜、流光扫过、关卡编号
+*/
+
+/* ============ 模块容器 ============ */
+.portal {
+  position: relative;
+  z-index: 2;
+}
+
+/* ============ 错落网格（环岛上方布局：2x2 紧凑）============ */
+.portal__grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-3);
+}
+/* 保留轻微错落感 */
+.portal__grid > :nth-child(2) { margin-top: var(--space-4); }
+.portal__grid > :nth-child(4) { margin-top: var(--space-4); }
+
+/* ============ 传送门卡片 ============ */
+.portal-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  min-height: 140px;
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--glass-shadow);
+  text-align: left;
+  cursor: pointer;
+  overflow: hidden;
+  transform-style: preserve-3d;
+  transition: transform var(--duration-base) var(--ease-smooth),
+              box-shadow var(--duration-base),
+              border-color var(--duration-base);
+  animation: portalEntry 0.6s var(--ease-out) both;
+}
+
+/* 卡片入场动画 */
+@keyframes portalEntry {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* 玻璃顶部高光 */
+.portal-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--glass-highlight);
+  pointer-events: none;
+  border-radius: inherit;
+  z-index: 1;
+}
+
+/* 流光扫过动画层 */
+.portal-card::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    110deg,
+    transparent 30%,
+    rgba(255, 255, 255, 0.25) 50%,
+    transparent 70%
+  );
+  background-size: 200% 100%;
+  background-position: -100% 0;
+  opacity: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  z-index: 2;
+  transition: opacity var(--duration-base);
+}
+
+.portal-card:hover {
+  transform: translateY(-6px);
+  box-shadow: var(--glass-shadow-strong);
+}
+.portal-card:hover::after {
+  opacity: 1;
+  animation: portalSweep 1.2s var(--ease-smooth);
+}
+
+@keyframes portalSweep {
+  from { background-position: -100% 0; }
+  to   { background-position: 200% 0; }
+}
+
+/* ============ 卡片内容元素 ============ */
+.portal-card__icon {
+  position: relative;
+  z-index: 3;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  font-size: var(--fs-xl);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--glass-border);
+  background: var(--glass-bg-subtle);
+  transition: transform var(--duration-base) var(--ease-spring);
+}
+.portal-card:hover .portal-card__icon {
+  transform: scale(1.1) rotate(-4deg);
+}
+
+.portal-card__title {
+  position: relative;
+  z-index: 3;
+  margin: 0;
+  font-size: var(--fs-md);
+  font-family: var(--font-rounded);
+  font-weight: var(--fw-bold);
+  color: var(--color-text);
+  letter-spacing: -0.01em;
+}
+
+.portal-card__desc {
+  position: relative;
+  z-index: 3;
+  margin: 0;
+  font-size: var(--fs-xs);
+  color: var(--color-text-secondary);
+  line-height: var(--lh-base);
+}
+
+.portal-card__arrow {
+  position: relative;
+  z-index: 3;
+  margin-top: auto;
+  font-size: var(--fs-md);
+  color: var(--color-text-tertiary);
+  transition: transform var(--duration-base) var(--ease-spring),
+              color var(--duration-fast);
+  align-self: flex-end;
+}
+
+.portal-card:hover .portal-card__arrow {
+  color: var(--nintendo-red);
+  transform: translateX(4px);
+}
+
+/* ============ 卡片色调变体（致敬任天堂角色色）============ */
+/* 任天堂红：马力欧/精灵球，主品牌识别 */
+.portal-card--red .portal-card__icon {
+  background: linear-gradient(135deg, var(--nintendo-red-soft), rgba(255, 60, 40, 0.04));
+  border-color: var(--nintendo-red-glow);
+  color: var(--nintendo-red);
+}
+/* 任天堂蓝：塞尔达/霓虹蓝，冷静智慧 */
+.portal-card--blue .portal-card__icon {
+  background: linear-gradient(135deg, var(--nintendo-blue-soft), rgba(91, 212, 237, 0.04));
+  border-color: var(--nintendo-blue-glow);
+  color: var(--nintendo-blue);
+}
+/* 任天堂金：星星/金币，奖励成就 */
+.portal-card--gold .portal-card__icon {
+  background: linear-gradient(135deg, var(--nintendo-yellow-soft), var(--color-gold-soft));
+  border-color: var(--nintendo-yellow-glow);
+  color: var(--nintendo-yellow);
+}
+/* 任天堂紫：稀有/特殊，神秘感 */
+.portal-card--purple .portal-card__icon {
+  background: linear-gradient(135deg, var(--nintendo-purple-soft), rgba(172, 143, 230, 0.04));
+  border-color: rgba(155, 126, 222, 0.3);
+  color: var(--nintendo-purple);
+}
+
+/* hover 时卡片整体色调微染 */
+.portal-card--red:hover {
+  border-color: var(--nintendo-red-glow);
+  box-shadow: var(--glass-shadow-strong), 0 0 24px var(--nintendo-red-soft);
+}
+.portal-card--blue:hover {
+  border-color: var(--nintendo-blue-glow);
+  box-shadow: var(--glass-shadow-strong), 0 0 24px var(--nintendo-blue-soft);
+}
+.portal-card--gold:hover {
+  border-color: var(--nintendo-yellow-glow);
+  box-shadow: var(--glass-shadow-strong), 0 0 24px var(--nintendo-yellow-soft);
+}
+.portal-card--purple:hover {
+  border-color: rgba(155, 126, 222, 0.34);
+  box-shadow: var(--glass-shadow-strong), 0 0 24px var(--nintendo-purple-soft);
+}
+
+/* ============ 卡片右上角关卡编号徽章 ============ */
+.portal-card__stage {
+  position: absolute;
+  top: var(--space-3);
+  right: var(--space-3);
+  z-index: 4;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 32px;
+  height: 22px;
+  padding: 0 var(--space-2);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-bold);
+  color: var(--color-text-secondary);
+  background: var(--glass-bg-strong);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-full);
+  letter-spacing: 0.05em;
+  transition: all var(--duration-base) var(--ease-spring);
+}
+.portal-card:hover .portal-card__stage {
+  color: var(--nintendo-red);
+  border-color: var(--nintendo-red-glow);
+  transform: scale(1.08);
+}
+
+/* ============ 响应式 ============ */
+@media (max-width: 1024px) {
+  /* 平板：保持 2x2，但取消错落 */
+  .portal__grid > :nth-child(n) { margin-top: 0; }
+}
+
+@media (max-width: 640px) {
+  .portal__grid {
+    grid-template-columns: 1fr;
+    gap: var(--space-3);
+  }
+  .portal__grid > :nth-child(n) { margin-top: 0; }
+  .portal-card {
+    min-height: 100px;
+    padding: var(--space-3);
+    flex-direction: row;
+    align-items: center;
+    gap: var(--space-3);
+  }
+  .portal-card__icon {
+    width: 40px;
+    height: 40px;
+    font-size: var(--fs-md);
+    flex-shrink: 0;
+  }
+  .portal-card__arrow {
+    margin-top: 0;
+  }
+}

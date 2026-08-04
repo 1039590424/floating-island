@@ -1,0 +1,291 @@
+/* skills.css
+   技能矩阵模块样式
+   RPG 技能树风格：等级总览卡 + 分类技能条
+*/
+
+/* ============ 模块容器 ============ */
+.skills-module {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+/* ============ 等级总览（RPG 角色卡）============ */
+.skills-summary {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+  padding: var(--space-5) var(--space-6);
+  background:
+    radial-gradient(circle at 90% 10%, rgba(255, 210, 63, 0.12) 0%, transparent 50%),
+    linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+  border: 3px solid var(--color-text);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  color: var(--color-text-inverse);
+  position: relative;
+  overflow: hidden;
+}
+/* 装饰：右上角星标 */
+.skills-summary::after {
+  content: '★';
+  position: absolute;
+  top: var(--space-3);
+  right: var(--space-4);
+  font-size: var(--fs-2xl);
+  color: var(--color-accent-yellow);
+  text-shadow: 2px 2px 0 var(--color-text);
+  animation: bounceY 2s ease-in-out infinite;
+}
+
+.skills-summary__avatar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 88px;
+  height: 88px;
+  flex-shrink: 0;
+  background: var(--color-text-inverse);
+  border: 3px solid var(--color-text);
+  border-radius: var(--radius-full);
+  box-shadow: 0 4px 0 var(--color-text);
+}
+.skills-summary__level-mark {
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-bold);
+  font-family: var(--font-rounded);
+  color: var(--color-text-muted);
+  letter-spacing: 1px;
+}
+.skills-summary__level-num {
+  font-size: var(--fs-2xl);
+  font-weight: var(--fw-black);
+  font-family: var(--font-rounded);
+  color: var(--color-primary);
+  line-height: 1;
+}
+
+.skills-summary__info { flex: 1; min-width: 0; }
+.skills-summary__title {
+  font-size: var(--fs-lg);
+  font-family: var(--font-rounded);
+  font-weight: var(--fw-black);
+  color: var(--color-accent-yellow);
+  text-shadow: 2px 2px 0 var(--color-text);
+}
+.skills-summary__tagline {
+  margin-top: var(--space-2);
+  font-size: var(--fs-sm);
+  color: rgba(255, 255, 255, 0.85);
+  line-height: var(--lh-base);
+}
+.skills-summary__exp {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-top: var(--space-3);
+}
+.skills-summary__exp-bar {
+  flex: 1;
+  height: 10px;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid var(--color-text);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+.skills-summary__exp-fill {
+  height: 100%;
+  width: 82%;
+  background: linear-gradient(90deg, var(--color-accent-yellow) 0%, #FF8C42 100%);
+  border-radius: var(--radius-full);
+  animation: expPulse 2.4s ease-in-out infinite;
+}
+.skills-summary__exp-text {
+  font-size: var(--fs-xs);
+  font-family: var(--font-mono);
+  color: var(--color-accent-yellow);
+  white-space: nowrap;
+}
+
+@keyframes expPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+/* ============ 技能分类网格 ============ */
+.skills-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-5);
+}
+
+.skill-category {
+  padding: var(--space-5);
+  background: var(--color-surface);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow var(--duration-fast);
+}
+.skill-category:hover { box-shadow: var(--shadow-md); }
+
+.skill-category__header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+  padding-bottom: var(--space-3);
+  border-bottom: 2px dashed var(--color-border);
+}
+.skill-category__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  font-size: var(--fs-md);
+  background: var(--color-bg-alt);
+  border: 2px solid var(--cat-color, var(--color-primary));
+  border-radius: var(--radius-md);
+}
+.skill-category__name {
+  font-size: var(--fs-md);
+  font-family: var(--font-rounded);
+  color: var(--color-text);
+}
+
+.skill-category__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+/* ============ 单条技能 ============ */
+.skill-item__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+}
+.skill-item__name {
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-medium);
+  color: var(--color-text);
+}
+.skill-item__level {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 2px;
+  font-family: var(--font-mono);
+}
+.skill-item__level-num {
+  font-size: var(--fs-md);
+  font-weight: var(--fw-black);
+  color: var(--cat-color, var(--color-primary));
+}
+.skill-item__level-unit {
+  font-size: var(--fs-xs);
+  color: var(--color-text-muted);
+}
+.skill-item__level-tag {
+  margin-left: var(--space-2);
+  padding: 1px var(--space-2);
+  font-size: var(--fs-xs);
+  font-family: var(--font-sans);
+  font-weight: var(--fw-bold);
+  background: var(--color-bg-alt);
+  border-radius: var(--radius-full);
+  color: var(--color-text-secondary);
+}
+
+/* 进度条 */
+.skill-bar {
+  height: 10px;
+  background: var(--color-bg-alt);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  position: relative;
+}
+.skill-bar__fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--skill-color, var(--color-primary)) 0%, var(--color-accent-yellow) 100%);
+  border-radius: var(--radius-full);
+  transition: width 1s var(--ease-out-back);
+  position: relative;
+}
+/* 进度条末端高光 */
+.skill-bar__fill::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 8px;
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: var(--radius-full);
+}
+
+.skill-item__note {
+  margin-top: var(--space-2);
+  font-size: var(--fs-xs);
+  color: var(--color-text-muted);
+  line-height: var(--lh-base);
+}
+
+/* ============ 错误 / 骨架 ============ */
+.skills-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-7);
+  text-align: center;
+  color: var(--color-danger);
+  background: rgba(232, 63, 63, 0.06);
+  border: 1px dashed var(--color-danger);
+  border-radius: var(--radius-md);
+}
+.skills-error__icon { font-size: var(--fs-2xl); }
+
+.skills-skeleton {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-5);
+}
+.skills-skeleton__cat {
+  padding: var(--space-5);
+  background: var(--color-surface);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-lg);
+}
+.skills-skeleton__bar { margin-bottom: var(--space-3); animation: shimmer 1.4s ease-in-out infinite; }
+
+/* ============ 响应式 ============ */
+/* 环岛左右窄列：技能和项目都强制单列 */
+@media (min-width: 1025px) {
+  .island--left .skills-grid,
+  .island--right .projects-grid {
+    grid-template-columns: 1fr !important;
+  }
+  /* 等级总览在窄列中改为纵向 */
+  .island--left .skills-summary {
+    flex-direction: column;
+    text-align: center;
+    gap: var(--space-3);
+  }
+}
+
+@media (max-width: 768px) {
+  .skills-grid { grid-template-columns: 1fr; }
+  .skills-skeleton { grid-template-columns: 1fr; }
+  .skills-summary { flex-direction: column; text-align: center; }
+}
+
+@media (max-width: 480px) {
+  .skills-summary__avatar { width: 72px; height: 72px; }
+  .skills-summary__level-num { font-size: var(--fs-xl); }
+}

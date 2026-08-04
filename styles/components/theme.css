@@ -1,0 +1,37 @@
+/* theme.css
+   主题切换图标样式 + 主题切换全局过渡
+   主题颜色变量已在 tokens.css 中通过 [data-theme="dark"] 切换
+   按钮容器样式见 dock.css 的 .topbar__theme-toggle
+*/
+
+.theme-icon {
+  position: absolute;
+  font-size: var(--fs-md);
+  transition: transform var(--duration-base) var(--ease-bounce), opacity var(--duration-base);
+}
+
+/* 默认 light 主题：显示月亮（暗示点击切到 dark） */
+.theme-icon--sun { opacity: 0; transform: rotate(-90deg) scale(0.5); }
+.theme-icon--moon { opacity: 1; transform: rotate(0) scale(1); }
+
+/* dark 主题：显示太阳 */
+[data-theme="dark"] .theme-icon--sun { opacity: 1; transform: rotate(0) scale(1); color: var(--color-accent-yellow); }
+[data-theme="dark"] .theme-icon--moon { opacity: 0; transform: rotate(90deg) scale(0.5); }
+
+/* 主题切换时的全局过渡（玻璃元素一并过渡）*/
+html {
+  transition: background-color var(--duration-slow) var(--ease-smooth);
+}
+
+body,
+.topbar,
+.dock,
+.dock__item,
+.island__float,
+.tool-section__inner,
+.toast,
+.portal-card {
+  transition: background-color var(--duration-base) var(--ease-smooth),
+              border-color var(--duration-base) var(--ease-smooth),
+              color var(--duration-base) var(--ease-smooth);
+}

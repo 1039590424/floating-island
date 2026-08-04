@@ -1,0 +1,58 @@
+{
+  "meta": {
+    "version": 1,
+    "description": "技能矩阵 — 个人能力图谱"
+  },
+  "summary": {
+    "level": 42,
+    "title": "持续升级中",
+    "tagline": "技能不是标签，是解决问题的肌肉记忆"
+  },
+  "categories": [
+    {
+      "id": "frontend",
+      "name": "前端工程",
+      "icon": "🎨",
+      "color": "var(--color-secondary)",
+      "skills": [
+        { "name": "HTML / CSS",        "level": 95, "note": "语义化、现代布局、动效" },
+        { "name": "JavaScript / TS",   "level": 90, "note": "ES Modules、类型系统" },
+        { "name": "React / Vue",       "level": 85, "note": "组件化、状态管理" },
+        { "name": "工程化 / 构建",     "level": 80, "note": "Vite、Webpack、CI" }
+      ]
+    },
+    {
+      "id": "backend",
+      "name": "后端与服务",
+      "icon": "⚙️",
+      "color": "var(--color-accent-green)",
+      "skills": [
+        { "name": "Node.js",          "level": 82, "note": "Express、服务端架构" },
+        { "name": "数据库设计",       "level": 75, "note": "SQL、NoSQL、索引优化" },
+        { "name": "API 设计",         "level": 85, "note": "REST、GraphQL" }
+      ]
+    },
+    {
+      "id": "tools",
+      "name": "工具与效率",
+      "icon": "🛠",
+      "color": "var(--color-accent-purple)",
+      "skills": [
+        { "name": "Git / 版本控制",   "level": 90, "note": "分支策略、协作流" },
+        { "name": "DevOps / 部署",    "level": 70, "note": "Docker、CI/CD" },
+        { "name": "设计 / 原型",      "level": 65, "note": "Figma、交互设计" }
+      ]
+    },
+    {
+      "id": "soft",
+      "name": "软实力",
+      "icon": "💡",
+      "color": "var(--color-accent-orange)",
+      "skills": [
+        { "name": "产品思维",         "level": 80, "note": "需求拆解、用户视角" },
+        { "name": "团队协作",         "level": 85, "note": "沟通、文档、复盘" },
+        { "name": "学习能力",         "level": 90, "note": "快速上手新技术" }
+      ]
+    }
+  ]
+}
