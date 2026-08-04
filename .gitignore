@@ -24,3 +24,6 @@ build/
 # Logs
 *.log
 npm-debug.log*
+
+# 简历原文件（含敏感信息，勿上传）
+*.pdf
