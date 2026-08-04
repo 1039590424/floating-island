@@ -119,10 +119,16 @@ class App {
       toolsEl.hidden = false;
       document.body.dataset.view = 'tools';
       this._activateTool(this.state.currentTool);
+      // 显示返回地图按钮
+      this.els.toolBack?.classList.add('is-visible');
+      if (this.els.toolBack) this.els.toolBack.hidden = false;
     } else {
       toolsEl.hidden = true;
       showcaseEl.hidden = false;
       document.body.dataset.view = 'showcase';
+      // 隐藏返回地图按钮
+      this.els.toolBack?.classList.remove('is-visible');
+      if (this.els.toolBack) this.els.toolBack.hidden = true;
     }
 
     this._setState({ view });
@@ -213,6 +219,7 @@ class App {
       themeToggle: $('#theme-toggle'),
       modeBadge: $('#mode-badge'),
       toastContainer: $('#toast-container'),
+      toolBack: $('#tool-back'),
     };
 
     // 恢复主题
@@ -243,6 +250,12 @@ class App {
   _bindEvents() {
     // 主题切换
     this.els.themeToggle?.addEventListener('click', () => this.toggleTheme());
+
+    // 工具页返回地图按钮
+    this.els.toolBack?.addEventListener('click', () => {
+      this.switchView('showcase');
+      setTimeout(() => resetToHome(), 150);
+    });
 
     // Dock 导航（事件委托）
     this.els.dock?.addEventListener('click', (event) => {

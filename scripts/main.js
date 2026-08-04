@@ -3,7 +3,7 @@
 // index.html 唯一加载的脚本（type="module"）
 // 职责：初始化 App、注册所有模块、启动应用
 
-import { app } from './app.js?v=3';
+import { app } from './app.js?v=4';
 import { ready } from './utils/dom.js';
 import { dockComponent } from './components/dock.js';
 

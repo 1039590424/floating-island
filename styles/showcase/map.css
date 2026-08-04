@@ -674,6 +674,55 @@
   background: rgba(0, 0, 0, 0.85);
 }
 
+/* ============ 工具页返回地图按钮 ============ */
+/* 复用 island-page__back 设计语言，fixed 定位贴合视口左上角 */
+.tool-back {
+  position: fixed;
+  top: var(--space-4);
+  left: var(--space-5);
+  z-index: 40;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  font-family: var(--font-rounded);
+  font-size: var(--fs-base);
+  font-weight: var(--fw-semibold);
+  color: var(--color-text);
+  background: var(--glass-bg-strong);
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-full);
+  box-shadow: var(--shadow-md);
+  cursor: pointer;
+  opacity: 0;
+  transform: translateX(-12px);
+  pointer-events: none;
+  transition: opacity var(--duration-base) var(--ease-out),
+              transform var(--duration-base) var(--ease-spring);
+}
+.tool-back.is-visible {
+  opacity: 1;
+  transform: translateX(0);
+  pointer-events: auto;
+}
+.tool-back:hover {
+  background: var(--nintendo-red);
+  color: var(--color-text-inverse);
+  border-color: transparent;
+  transform: translateX(-3px);
+  box-shadow: 0 4px 16px var(--nintendo-red-glow);
+}
+.tool-back:active { transform: translateX(-1px) scale(0.97); }
+.tool-back__icon {
+  font-size: var(--fs-md);
+  transition: transform var(--duration-fast) var(--ease-spring);
+}
+.tool-back:hover .tool-back__icon {
+  transform: translateX(-2px);
+}
+
 /* ============ 地图控制栏 ============ */
 .map-controls {
   position: absolute;

@@ -96,6 +96,12 @@
       <!-- ============ 工具层 / Tool Layer（dock 切换后可见）============ -->
       <main class="tools-view" id="tools-view" data-view="tools" role="main" hidden>
 
+        <!-- 返回地图按钮（点击工具岛进入时显示）-->
+        <button class="tool-back" id="tool-back" type="button" aria-label="返回地图" hidden>
+          <span class="tool-back__icon" aria-hidden="true">←</span>
+          <span class="tool-back__text">返回地图</span>
+        </button>
+
         <section class="tool-section is-active" id="dashboard" data-module="dashboard" aria-labelledby="dashboard-title">
           <header class="tool-section__header">
             <h2 id="dashboard-title" class="tool-section__title">工作台</h2>
@@ -181,6 +187,6 @@
 
   </div>
 
-  <script type="module" src="scripts/main.js?v=20m"></script>
+  <script type="module" src="scripts/main.js?v=21m"></script>
 </body>
 </html>
